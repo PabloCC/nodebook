@@ -1,0 +1,399 @@
+"use client";
+
+import { useMemo, useState, useTransition } from "react";
+import {
+  DndContext,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+  type DragOverEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import type { Source } from "@/lib/db/schema";
+import type { TreeNode } from "@/lib/tree";
+import type { OutlineProposal } from "@/lib/ai/outline-schema";
+import {
+  createNode,
+  deleteNode,
+  moveNode,
+  renameNode,
+} from "@/lib/actions/nodes";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { OutlinePreviewDialog } from "./OutlinePreviewDialog";
+
+export function OutlineTree({
+  workspaceId,
+  tree,
+  sources,
+  selectedId,
+  onSelect,
+}: {
+  workspaceId: string;
+  tree: TreeNode[];
+  sources: Source[];
+  selectedId: string | null;
+  onSelect: (id: string | null) => void;
+}) {
+  const [, startTransition] = useTransition();
+  const [generating, setGenerating] = useState(false);
+  const [generateError, setGenerateError] = useState<string | null>(null);
+  const [proposal, setProposal] = useState<OutlineProposal | null>(null);
+  const [dropGroupId, setDropGroupId] = useState<string | null>(null);
+  const hasReadySources = sources.some((s) => s.status === "ready");
+
+  const byId = useMemo(() => {
+    const map = new Map<string, TreeNode>();
+    const walk = (list: TreeNode[]) => {
+      for (const node of list) {
+        map.set(node.id, node);
+        walk(node.children);
+      }
+    };
+    walk(tree);
+    return map;
+  }, [tree]);
+
+  const sensors = useSensors(
+    // 6px activation distance keeps click / double-click rename working.
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } })
+  );
+
+  const siblingsOf = (node: TreeNode): TreeNode[] =>
+    node.parentId ? (byId.get(node.parentId)?.children ?? []) : tree;
+
+  const isDescendantOf = (candidate: TreeNode, ancestorId: string): boolean => {
+    for (
+      let cursor: TreeNode | undefined = candidate;
+      cursor;
+      cursor = cursor.parentId ? byId.get(cursor.parentId) : undefined
+    ) {
+      if (cursor.id === ancestorId) return true;
+    }
+    return false;
+  };
+
+  const handleDragOver = (event: DragOverEvent) => {
+    const { active, over } = event;
+    const overNode = over ? byId.get(String(over.id)) : null;
+    const activeNode = active ? byId.get(String(active.id)) : null;
+    const isGroupDrop =
+      overNode &&
+      activeNode &&
+      overNode.type === "group" &&
+      overNode.parentId !== activeNode.parentId &&
+      !isDescendantOf(overNode, activeNode.id);
+    setDropGroupId(isGroupDrop ? overNode.id : null);
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    setDropGroupId(null);
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    const activeNode = byId.get(String(active.id));
+    const overNode = byId.get(String(over.id));
+    if (!activeNode || !overNode) return;
+    if (isDescendantOf(overNode, activeNode.id)) return;
+
+    if (overNode.type === "group" && overNode.parentId !== activeNode.parentId) {
+      // Dropping onto a group from outside it: insert at the end of the group.
+      startTransition(() =>
+        moveNode(activeNode.id, overNode.id, overNode.children.length)
+      );
+      return;
+    }
+
+    // Otherwise take the position of the node we dropped on, in its list.
+    const targetSiblings = siblingsOf(overNode);
+    const overIndex = targetSiblings.findIndex((n) => n.id === overNode.id);
+    if (overIndex === -1) return;
+    startTransition(() =>
+      moveNode(activeNode.id, overNode.parentId, overIndex)
+    );
+  };
+
+  const addRoot = (type: "group" | "node") =>
+    startTransition(async () => {
+      const id = await createNode(workspaceId, null, type);
+      if (type === "node") onSelect(id);
+    });
+
+  const generate = async () => {
+    setGenerating(true);
+    setGenerateError(null);
+    try {
+      const res = await fetch("/api/ai/generate-outline", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ workspaceId }),
+      });
+      const data = (await res.json()) as {
+        proposal?: OutlineProposal;
+        error?: string;
+      };
+      if (!res.ok || !data.proposal) {
+        setGenerateError(data.error ?? "Outline generation failed.");
+      } else {
+        setProposal(data.proposal);
+      }
+    } catch {
+      setGenerateError("Outline generation failed. Is the dev server running?");
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  return (
+    <div className="flex h-full flex-col">
+      <div className="flex items-center justify-between px-3 pt-3">
+        <h2 className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
+          Outline
+        </h2>
+      </div>
+
+      <div className="mt-2 flex-1 px-1">
+        {tree.length === 0 ? (
+          <p className="px-2 py-4 text-sm text-neutral-500">
+            No outline yet. Add a group or node below, or generate one from
+            your sources.
+          </p>
+        ) : (
+          <DndContext
+            sensors={sensors}
+            onDragOver={handleDragOver}
+            onDragEnd={handleDragEnd}
+            onDragCancel={() => setDropGroupId(null)}
+          >
+            <SortableContext
+              items={tree.map((n) => n.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              <ul>
+                {tree.map((node) => (
+                  <TreeItem
+                    key={node.id}
+                    node={node}
+                    depth={0}
+                    workspaceId={workspaceId}
+                    selectedId={selectedId}
+                    onSelect={onSelect}
+                    dropGroupId={dropGroupId}
+                  />
+                ))}
+              </ul>
+            </SortableContext>
+          </DndContext>
+        )}
+      </div>
+
+      <div className="sticky bottom-0 space-y-2 border-t border-neutral-200 bg-white p-2">
+        {generateError && (
+          <p className="px-1 text-xs text-red-600">
+            {generateError}
+          </p>
+        )}
+        <div className="flex gap-2">
+          <button
+            onClick={() => addRoot("node")}
+            className="flex-1 rounded-md border border-neutral-200 px-2 py-1.5 text-xs hover:bg-neutral-100"
+          >
+            + Node
+          </button>
+          <button
+            onClick={() => addRoot("group")}
+            className="flex-1 rounded-md border border-neutral-200 px-2 py-1.5 text-xs hover:bg-neutral-100"
+          >
+            + Group
+          </button>
+        </div>
+        <button
+          onClick={generate}
+          disabled={generating || !hasReadySources}
+          title={
+            hasReadySources ? undefined : "Add a source first to generate an outline"
+          }
+          className="w-full rounded-md bg-neutral-900 px-2 py-1.5 text-xs font-medium text-white hover:bg-neutral-700 disabled:opacity-50"
+        >
+          {generating ? "Generating…" : "✨ Generate Outline"}
+        </button>
+      </div>
+
+      {proposal && (
+        <OutlinePreviewDialog
+          workspaceId={workspaceId}
+          proposal={proposal}
+          onClose={() => setProposal(null)}
+        />
+      )}
+    </div>
+  );
+}
+
+function TreeItem({
+  node,
+  depth,
+  workspaceId,
+  selectedId,
+  onSelect,
+  dropGroupId,
+}: {
+  node: TreeNode;
+  depth: number;
+  workspaceId: string;
+  selectedId: string | null;
+  onSelect: (id: string | null) => void;
+  dropGroupId: string | null;
+}) {
+  const [collapsed, setCollapsed] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [, startTransition] = useTransition();
+  const isGroup = node.type === "group";
+  const isSelected = node.id === selectedId;
+  const isDropTarget = dropGroupId === node.id;
+
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
+    useSortable({ id: node.id });
+
+  const commitRename = (value: string) => {
+    setEditing(false);
+    if (value.trim() && value.trim() !== node.title) {
+      startTransition(() => renameNode(node.id, value));
+    }
+  };
+
+  return (
+    <li
+      ref={setNodeRef}
+      style={{
+        transform: CSS.Transform.toString(transform),
+        transition,
+        opacity: isDragging ? 0.4 : undefined,
+      }}
+    >
+      <div
+        {...attributes}
+        {...listeners}
+        className={`group flex items-center gap-1 rounded-md px-2 py-1 text-sm ${
+          isDropTarget
+            ? "bg-blue-100 outline outline-2 outline-blue-400"
+            : isSelected
+              ? "bg-neutral-200"
+              : "hover:bg-neutral-100"
+        }`}
+        style={{ paddingLeft: `${8 + depth * 14}px` }}
+      >
+        {isGroup ? (
+          <button
+            onClick={() => setCollapsed((c) => !c)}
+            className="w-4 shrink-0 text-neutral-400"
+            aria-label={collapsed ? "Expand group" : "Collapse group"}
+          >
+            {collapsed ? "▸" : "▾"}
+          </button>
+        ) : (
+          <span className="w-4 shrink-0 text-center text-neutral-400">·</span>
+        )}
+
+        {editing ? (
+          <input
+            autoFocus
+            defaultValue={node.title}
+            onBlur={(e) => commitRename(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") commitRename(e.currentTarget.value);
+              if (e.key === "Escape") setEditing(false);
+            }}
+            className="min-w-0 flex-1 rounded border border-neutral-300 bg-transparent px-1 py-0 text-sm outline-none"
+          />
+        ) : (
+          <button
+            onClick={() => (isGroup ? setCollapsed((c) => !c) : onSelect(node.id))}
+            onDoubleClick={() => setEditing(true)}
+            className={`min-w-0 flex-1 truncate text-left ${
+              isGroup ? "font-medium" : ""
+            }`}
+            title={node.title}
+          >
+            {node.title}
+          </button>
+        )}
+
+        <span className="hidden shrink-0 gap-0.5 group-hover:flex">
+          {isGroup && (
+            <button
+              onClick={() =>
+                startTransition(async () => {
+                  setCollapsed(false);
+                  const id = await createNode(workspaceId, node.id, "node");
+                  onSelect(id);
+                })
+              }
+              title="Add node inside"
+              className="rounded px-1 text-neutral-400 hover:text-neutral-900"
+            >
+              +
+            </button>
+          )}
+          <button
+            onClick={() => setEditing(true)}
+            title="Rename"
+            className="rounded px-1 text-neutral-400 hover:text-neutral-900"
+          >
+            ✎
+          </button>
+          <button
+            onClick={() => setConfirmingDelete(true)}
+            title="Delete"
+            className="rounded px-1 text-neutral-400 hover:text-red-600"
+          >
+            ×
+          </button>
+        </span>
+      </div>
+
+      <ConfirmDialog
+        open={confirmingDelete}
+        title={isGroup ? "Delete group?" : "Delete node?"}
+        message={
+          isGroup
+            ? `"${node.title}" and everything inside it will be deleted.`
+            : `"${node.title}" and its content will be deleted.`
+        }
+        onCancel={() => setConfirmingDelete(false)}
+        onConfirm={() => {
+          setConfirmingDelete(false);
+          if (isSelected) onSelect(null);
+          startTransition(() => deleteNode(node.id));
+        }}
+      />
+
+      {isGroup && !collapsed && node.children.length > 0 && (
+        <SortableContext
+          items={node.children.map((n) => n.id)}
+          strategy={verticalListSortingStrategy}
+        >
+          <ul>
+            {node.children.map((child) => (
+              <TreeItem
+                key={child.id}
+                node={child}
+                depth={depth + 1}
+                workspaceId={workspaceId}
+                selectedId={selectedId}
+                onSelect={onSelect}
+                dropGroupId={dropGroupId}
+              />
+            ))}
+          </ul>
+        </SortableContext>
+      )}
+    </li>
+  );
+}
