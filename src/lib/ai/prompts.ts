@@ -42,13 +42,15 @@ export function nodeActionPrompt(
   action: NodeAction,
   workspace: Workspace,
   ctx: NodeContext,
-  question?: string
+  question?: string,
+  hasSources = true
 ): string {
   const audience =
     workspace.type === "course" ? "course students" : "a student studying this material";
   const position = outlinePosition(ctx);
-  const sourcesNote =
-    "Ground everything in the provided sources. If the sources do not cover something, say so rather than inventing facts.";
+  const sourcesNote = hasSources
+    ? "Ground everything in the provided sources. If the sources do not cover something, say so rather than inventing facts."
+    : "This workspace has no sources attached. Write from your general knowledge of the topic, and flag anything you are not certain about.";
 
   switch (action) {
     case "expand":
@@ -74,7 +76,7 @@ ${ctx.content}`;
     case "flashcards":
       return `You are creating flashcards for ${audience}. ${position}
 
-From the node content below${ctx.content.trim() ? "" : " (empty — use the sources for this topic instead)"}, produce 5-12 question/answer flashcards as a markdown section:
+From the node content below${ctx.content.trim() ? "" : hasSources ? " (empty — use the sources for this topic instead)" : " (empty — use your general knowledge of this topic)"}, produce 5-12 question/answer flashcards as a markdown section:
 
 ## Flashcards
 

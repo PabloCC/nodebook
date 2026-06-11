@@ -48,16 +48,23 @@ export async function POST(request: Request) {
     const model = await getModel();
 
     // Summarize only condenses what's already in the node; everything else
-    // is grounded in the workspace sources.
-    const system =
-      action === "summarize"
-        ? undefined
-        : `Reference material for this workspace:\n\n${await buildSourceContext(workspaceId)}`;
+    // is grounded in the workspace sources (when there are any).
+    const sourceContext =
+      action === "summarize" ? "" : await buildSourceContext(workspaceId);
+    const system = sourceContext
+      ? `Reference material for this workspace:\n\n${sourceContext}`
+      : undefined;
 
     const result = streamText({
       model,
       system,
-      prompt: nodeActionPrompt(action, workspace, nodeCtx, question),
+      prompt: nodeActionPrompt(
+        action,
+        workspace,
+        nodeCtx,
+        question,
+        Boolean(sourceContext)
+      ),
       abortSignal: request.signal,
     });
     return result.toTextStreamResponse();
