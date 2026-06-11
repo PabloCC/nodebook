@@ -270,7 +270,11 @@ function TreeItem({
     <li
       ref={setNodeRef}
       style={{
-        transform: CSS.Transform.toString(transform),
+        // Lock dragging to the vertical axis: a lateral x offset would
+        // overflow the sidebar and create a horizontal scrollbar.
+        transform: CSS.Transform.toString(
+          transform ? { ...transform, x: 0 } : null
+        ),
         transition,
         opacity: isDragging ? 0.4 : undefined,
       }}

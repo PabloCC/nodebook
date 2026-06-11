@@ -42,3 +42,7 @@ next-env.d.ts
 
 # local database
 data/
+plans/
+.claude/
+.agents/
+skills-lock.json

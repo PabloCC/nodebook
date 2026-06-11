@@ -48,7 +48,7 @@ export function WorkspaceShell({
       </header>
 
       <div className="flex min-h-0 flex-1">
-        <aside className="w-72 shrink-0 overflow-y-auto border-r border-hairline bg-surface-soft">
+        <aside className="w-72 shrink-0 overflow-x-hidden overflow-y-auto border-r border-hairline bg-surface-soft">
           <OutlineTree
             workspaceId={workspace.id}
             tree={tree}
