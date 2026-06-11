@@ -20,14 +20,14 @@ export function NodeEditor({
 }) {
   if (!node) {
     return (
-      <div className="flex h-full items-center justify-center p-8 text-center text-sm text-neutral-500">
+      <div className="flex h-full items-center justify-center p-8 text-center text-sm text-muted">
         Select a node in the outline to start editing.
       </div>
     );
   }
   if (node.type === "group") {
     return (
-      <div className="flex h-full items-center justify-center p-8 text-center text-sm text-neutral-500">
+      <div className="flex h-full items-center justify-center p-8 text-center text-sm text-muted">
         “{node.title}” is a group. Select a node inside it to edit content.
       </div>
     );
@@ -136,7 +136,7 @@ function Editor({
   };
 
   return (
-    <div className="mx-auto flex h-full max-w-3xl flex-col px-8 py-6">
+    <div className="mx-auto flex h-full max-w-3xl flex-col px-8 py-8">
       <div className="flex items-center gap-3">
         <input
           value={title}
@@ -145,9 +145,9 @@ function Editor({
             scheduleSave(e.target.value, content);
           }}
           placeholder="Untitled node"
-          className="min-w-0 flex-1 bg-transparent text-xl font-bold outline-none"
+          className="min-w-0 flex-1 bg-transparent text-display font-semibold text-ink outline-none placeholder:text-muted-soft"
         />
-        <span className="shrink-0 text-xs text-neutral-400">
+        <span className="shrink-0 text-xs text-muted">
           {streaming
             ? "Generating…"
             : saveState === "saved"
@@ -156,12 +156,20 @@ function Editor({
                 ? "Saving…"
                 : "Unsaved"}
         </span>
-        <button
-          onClick={() => setPreview((p) => !p)}
-          className="shrink-0 rounded-md border border-neutral-200 px-2.5 py-1 text-xs hover:bg-neutral-100"
-        >
-          {preview ? "Edit" : "Preview"}
-        </button>
+        <div className="pill-group shrink-0">
+          <button
+            onClick={() => setPreview(false)}
+            className={`pill-tab px-2.5 py-1 text-xs ${!preview ? "pill-tab-active" : ""}`}
+          >
+            Edit
+          </button>
+          <button
+            onClick={() => setPreview(true)}
+            className={`pill-tab px-2.5 py-1 text-xs ${preview ? "pill-tab-active" : ""}`}
+          >
+            Preview
+          </button>
+        </div>
       </div>
 
       <div className="mt-4 min-h-0 flex-1">
@@ -172,7 +180,7 @@ function Editor({
                 {content}
               </ReactMarkdown>
             ) : (
-              <p className="text-sm text-neutral-500">Nothing to preview yet.</p>
+              <p className="text-sm text-muted">Nothing to preview yet.</p>
             )}
           </div>
         ) : (

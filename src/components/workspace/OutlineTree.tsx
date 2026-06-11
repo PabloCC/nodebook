@@ -152,14 +152,12 @@ export function OutlineTree({
   return (
     <div className="flex h-full flex-col">
       <div className="flex items-center justify-between px-3 pt-3">
-        <h2 className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
-          Outline
-        </h2>
+        <h2 className="text-xs font-semibold text-muted">Outline</h2>
       </div>
 
       <div className="mt-2 flex-1 px-1">
         {tree.length === 0 ? (
-          <p className="px-2 py-4 text-sm text-neutral-500">
+          <p className="px-2 py-4 text-sm text-muted">
             No outline yet. Add a group or node below, or generate one from
             your sources.
           </p>
@@ -192,22 +190,22 @@ export function OutlineTree({
         )}
       </div>
 
-      <div className="sticky bottom-0 space-y-2 border-t border-neutral-200 bg-white p-2">
+      <div className="sticky bottom-0 space-y-2 border-t border-hairline bg-surface-soft p-2">
         {generateError && (
-          <p className="px-1 text-xs text-red-600">
+          <p className="px-1 text-xs text-error">
             {generateError}
           </p>
         )}
         <div className="flex gap-2">
           <button
             onClick={() => addRoot("node")}
-            className="flex-1 rounded-md border border-neutral-200 px-2 py-1.5 text-xs hover:bg-neutral-100"
+            className="btn-utility flex-1"
           >
             + Node
           </button>
           <button
             onClick={() => addRoot("group")}
-            className="flex-1 rounded-md border border-neutral-200 px-2 py-1.5 text-xs hover:bg-neutral-100"
+            className="btn-utility flex-1"
           >
             + Group
           </button>
@@ -218,9 +216,9 @@ export function OutlineTree({
           title={
             hasReadySources ? undefined : "Add a source first to generate an outline"
           }
-          className="w-full rounded-md bg-neutral-900 px-2 py-1.5 text-xs font-medium text-white hover:bg-neutral-700 disabled:opacity-50"
+          className="btn-primary w-full px-2 py-1.5 text-xs"
         >
-          {generating ? "Generating…" : "✨ Generate Outline"}
+          {generating ? "Generating…" : "Generate Outline"}
         </button>
       </div>
 
@@ -280,25 +278,25 @@ function TreeItem({
       <div
         {...attributes}
         {...listeners}
-        className={`group flex items-center gap-1 rounded-md px-2 py-1 text-sm ${
+        className={`group flex items-center gap-1 rounded-lg px-2 py-1 text-sm ${
           isDropTarget
-            ? "bg-blue-100 outline outline-2 outline-blue-400"
+            ? "bg-accent/10 outline-2 outline-accent"
             : isSelected
-              ? "bg-neutral-200"
-              : "hover:bg-neutral-100"
+              ? "bg-canvas shadow-[0_1px_2px_rgba(0,0,0,0.05)]"
+              : "hover:bg-surface-soft"
         }`}
         style={{ paddingLeft: `${8 + depth * 14}px` }}
       >
         {isGroup ? (
           <button
             onClick={() => setCollapsed((c) => !c)}
-            className="w-4 shrink-0 text-neutral-400"
+            className="w-4 shrink-0 text-muted"
             aria-label={collapsed ? "Expand group" : "Collapse group"}
           >
             {collapsed ? "▸" : "▾"}
           </button>
         ) : (
-          <span className="w-4 shrink-0 text-center text-neutral-400">·</span>
+          <span className="w-4 shrink-0 text-center text-muted">·</span>
         )}
 
         {editing ? (
@@ -310,7 +308,7 @@ function TreeItem({
               if (e.key === "Enter") commitRename(e.currentTarget.value);
               if (e.key === "Escape") setEditing(false);
             }}
-            className="min-w-0 flex-1 rounded border border-neutral-300 bg-transparent px-1 py-0 text-sm outline-none"
+            className="min-w-0 flex-1 rounded-md border border-hairline bg-canvas px-1 py-0 text-sm outline-none focus:border-ink"
           />
         ) : (
           <button
@@ -336,7 +334,7 @@ function TreeItem({
                 })
               }
               title="Add node inside"
-              className="rounded px-1 text-neutral-400 hover:text-neutral-900"
+              className="rounded-md px-1 text-muted hover:text-ink"
             >
               +
             </button>
@@ -344,14 +342,14 @@ function TreeItem({
           <button
             onClick={() => setEditing(true)}
             title="Rename"
-            className="rounded px-1 text-neutral-400 hover:text-neutral-900"
+            className="rounded-md px-1 text-muted hover:text-ink"
           >
             ✎
           </button>
           <button
             onClick={() => setConfirmingDelete(true)}
             title="Delete"
-            className="rounded px-1 text-neutral-400 hover:text-red-600"
+            className="rounded-md px-1 text-muted hover:text-error"
           >
             ×
           </button>

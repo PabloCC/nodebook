@@ -1,20 +1,118 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  /* Action and accent */
+  --color-primary: #111111;
+  --color-primary-active: #242424;
+  --color-accent: #3b82f6;
+
+  /* Surfaces */
+  --color-canvas: #ffffff;
+  --color-surface-soft: #f8f9fa;
+  --color-surface-card: #f5f5f5;
+  --color-surface-strong: #e5e7eb;
+
+  /* Text */
+  --color-ink: #111111;
+  --color-body: #374151;
+  --color-muted: #6b7280;
+  --color-muted-soft: #898989;
+
+  /* Hairlines */
+  --color-hairline: #e5e7eb;
+  --color-hairline-soft: #f3f4f6;
+
+  /* Semantic */
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-error: #ef4444;
+
+  /* Display type — Cal Sans substituted with Inter 600 + negative tracking */
+  --text-display: 28px;
+  --text-display--line-height: 1.2;
+  --text-display--letter-spacing: -0.5px;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", SFMono-Regular, var(--font-geist-mono),
+    monospace;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  background: var(--color-canvas);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+}
+
+/* Editor prose: body-md running text with ink headlines */
+.prose {
+  font-size: 16px;
+  line-height: 1.5;
+  letter-spacing: 0;
+  color: var(--color-body);
+}
+.prose :where(a) {
+  color: var(--color-ink);
+}
+.prose :where(h1, h2, h3, h4) {
+  color: var(--color-ink);
+  letter-spacing: -0.3px;
+}
+
+@layer components {
+  /* Near-black CTA — press darkens, nothing else changes */
+  .btn-primary {
+    @apply inline-flex items-center justify-center rounded-lg bg-primary px-4 py-2
+      text-sm font-semibold text-white active:bg-primary-active
+      focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink
+      disabled:opacity-50;
+  }
+
+  /* White button with hairline outline */
+  .btn-secondary {
+    @apply inline-flex items-center justify-center rounded-lg border border-hairline bg-canvas
+      px-4 py-2 text-sm font-medium text-ink active:bg-surface-card
+      focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink
+      disabled:opacity-50;
+  }
+
+  /* Compact secondary for panel and toolbar actions */
+  .btn-utility {
+    @apply inline-flex items-center justify-center rounded-lg border border-hairline bg-canvas
+      px-2.5 py-1.5 text-xs font-medium text-ink active:bg-surface-card
+      focus-visible:outline-2 focus-visible:outline-ink
+      disabled:opacity-50;
+  }
+
+  /* Destructive — semantic error red */
+  .btn-destructive {
+    @apply inline-flex items-center justify-center rounded-lg bg-error px-4 py-2
+      text-sm font-semibold text-white active:opacity-90 disabled:opacity-50;
+  }
+
+  /* Standard text input — focus shifts the border to ink, no ring */
+  .input-field {
+    @apply w-full rounded-lg border border-hairline bg-canvas px-3.5 py-2 text-sm text-ink
+      outline-none placeholder:text-muted-soft focus:border-ink disabled:opacity-50;
+  }
+
+  /* Multiline variant */
+  .input-area {
+    @apply w-full rounded-lg border border-hairline bg-canvas px-3.5 py-2 text-ink
+      outline-none placeholder:text-muted-soft focus:border-ink disabled:opacity-50;
+  }
+
+  /* nav-pill-group: pill wrapper with white active tab inside */
+  .pill-group {
+    @apply inline-flex items-center gap-1 rounded-full bg-surface-soft p-1.5;
+  }
+  .pill-tab {
+    @apply rounded-lg px-3.5 py-1.5 text-sm font-medium text-muted;
+  }
+  .pill-tab-active {
+    @apply bg-canvas text-ink shadow-[0_1px_2px_rgba(0,0,0,0.05)];
+  }
 }

@@ -23,22 +23,24 @@ export function WorkspaceShell({
 
   return (
     <div className="flex h-screen flex-col">
-      <header className="flex h-12 shrink-0 items-center gap-3 border-b border-neutral-200 px-4">
+      <header className="flex h-14 shrink-0 items-center gap-3 border-b border-hairline bg-canvas px-4">
         <Link
           href="/"
-          className="text-sm text-neutral-500 hover:text-neutral-900"
+          className="text-sm font-medium text-muted hover:text-ink"
         >
           ← MyNodebook
         </Link>
-        <span className="text-neutral-300">/</span>
-        <h1 className="truncate text-sm font-semibold">{workspace.name}</h1>
-        <span className="rounded-full border border-neutral-200 px-2 py-0.5 text-xs text-neutral-500">
+        <span className="text-muted-soft">/</span>
+        <h1 className="truncate text-sm font-semibold text-ink">
+          {workspace.name}
+        </h1>
+        <span className="rounded-full bg-surface-card px-3 py-0.5 text-[13px] font-medium text-ink">
           {workspace.type === "course" ? "Course" : "Study"}
         </span>
         <div className="ml-auto">
           <Link
             href="/settings"
-            className="text-sm text-neutral-500 hover:text-neutral-900"
+            className="text-sm font-medium text-muted hover:text-ink"
           >
             Settings
           </Link>
@@ -46,7 +48,7 @@ export function WorkspaceShell({
       </header>
 
       <div className="flex min-h-0 flex-1">
-        <aside className="w-72 shrink-0 overflow-y-auto border-r border-neutral-200">
+        <aside className="w-72 shrink-0 overflow-y-auto border-r border-hairline bg-surface-soft">
           <OutlineTree
             workspaceId={workspace.id}
             tree={tree}
@@ -56,7 +58,7 @@ export function WorkspaceShell({
           />
         </aside>
 
-        <main className="min-w-0 flex-1 overflow-y-auto">
+        <main className="min-w-0 flex-1 overflow-y-auto bg-canvas">
           <NodeEditor
             key={selectedNode?.id ?? "none"}
             node={selectedNode}
@@ -65,7 +67,7 @@ export function WorkspaceShell({
           />
         </main>
 
-        <aside className="w-72 shrink-0 overflow-y-auto border-l border-neutral-200">
+        <aside className="w-72 shrink-0 overflow-y-auto border-l border-hairline bg-surface-soft">
           <SourcesPanel workspaceId={workspace.id} sources={sources} />
         </aside>
       </div>

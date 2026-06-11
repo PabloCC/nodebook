@@ -44,7 +44,7 @@ export function SettingsForm({
     >
       <fieldset>
         <legend className="text-sm font-semibold">AI provider</legend>
-        <div className="mt-3 flex gap-2">
+        <div className="pill-group mt-3">
           {(
             [
               ["anthropic", "Anthropic"],
@@ -54,10 +54,8 @@ export function SettingsForm({
           ).map(([value, label]) => (
             <label
               key={value}
-              className={`cursor-pointer rounded-md border px-3 py-2 text-sm ${
-                provider === value
-                  ? "border-neutral-900 bg-neutral-900 text-white"
-                  : "border-neutral-200 hover:bg-neutral-100"
+              className={`pill-tab cursor-pointer ${
+                provider === value ? "pill-tab-active" : ""
               }`}
             >
               <input
@@ -102,7 +100,7 @@ export function SettingsForm({
             <input
               name="ollamaBaseUrl"
               defaultValue={settings.ollamaBaseUrl}
-              className="w-full rounded-md border border-neutral-200 bg-transparent px-3 py-2 text-sm outline-none"
+              className="input-field"
             />
           </Field>
           <Field
@@ -120,7 +118,7 @@ export function SettingsForm({
               defaultValue={settings.ollamaModel}
               list="ollama-models"
               placeholder="llama3.2"
-              className="w-full rounded-md border border-neutral-200 bg-transparent px-3 py-2 text-sm outline-none"
+              className="input-field"
             />
             <datalist id="ollama-models">
               {(ollamaModels ?? []).map((m) => (
@@ -135,11 +133,11 @@ export function SettingsForm({
         <button
           type="submit"
           disabled={pending}
-          className="rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-700 disabled:opacity-50"
+          className="btn-primary px-5"
         >
           {pending ? "Saving…" : "Save settings"}
         </button>
-        {saved && <span className="text-sm text-green-600">Saved.</span>}
+        {saved && <span className="text-sm text-success">Saved.</span>}
       </div>
     </form>
   );
@@ -175,7 +173,7 @@ function ProviderSection({
           type="password"
           placeholder={keyPlaceholder}
           autoComplete="off"
-          className="w-full rounded-md border border-neutral-200 bg-transparent px-3 py-2 text-sm outline-none"
+          className="input-field"
         />
       </Field>
       <Field label="Model" hint="Free text — newer model IDs work too.">
@@ -183,7 +181,7 @@ function ProviderSection({
           name={modelName}
           defaultValue={modelDefault}
           list={`${modelName}-suggestions`}
-          className="w-full rounded-md border border-neutral-200 bg-transparent px-3 py-2 text-sm outline-none"
+          className="input-field"
         />
         <datalist id={`${modelName}-suggestions`}>
           {modelSuggestions.map((m) => (
@@ -208,7 +206,7 @@ function Field({
     <label className="block">
       <span className="text-sm font-semibold">{label}</span>
       <div className="mt-1.5">{children}</div>
-      {hint && <p className="mt-1 text-xs text-neutral-500">{hint}</p>}
+      {hint && <p className="mt-1 text-xs text-muted">{hint}</p>}
     </label>
   );
 }

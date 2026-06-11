@@ -24,9 +24,9 @@ export function AiToolbar({
   const [question, setQuestion] = useState("");
 
   return (
-    <div className="border-t border-neutral-200 pt-3">
+    <div className="border-t border-hairline-soft pt-3">
       {error && (
-        <p className="mb-2 text-xs text-red-600">{error}</p>
+        <p className="mb-2 text-xs text-error">{error}</p>
       )}
       <div className="flex flex-wrap items-center gap-2">
         {ACTION_BUTTONS.map(({ action, label }) => (
@@ -34,7 +34,7 @@ export function AiToolbar({
             key={action}
             onClick={() => onRun(action)}
             disabled={streaming}
-            className="rounded-md border border-neutral-200 px-2.5 py-1.5 text-xs hover:bg-neutral-100 disabled:opacity-50"
+            className="btn-utility"
           >
             {label}
           </button>
@@ -42,7 +42,7 @@ export function AiToolbar({
         {streaming && (
           <button
             onClick={onStop}
-            className="rounded-md border border-red-300 px-2.5 py-1.5 text-xs text-red-600 hover:bg-red-50"
+            className="rounded-lg border border-error/40 px-2.5 py-1.5 text-xs font-medium text-error active:bg-error/10"
           >
             ■ Stop
           </button>
@@ -61,12 +61,12 @@ export function AiToolbar({
             onChange={(e) => setQuestion(e.target.value)}
             placeholder="Ask about this topic…"
             disabled={streaming}
-            className="min-w-0 flex-1 rounded-md border border-neutral-200 bg-transparent px-2.5 py-1.5 text-xs outline-none disabled:opacity-50"
+            className="input-field min-w-0 flex-1 px-3 py-1.5 text-xs"
           />
           <button
             type="submit"
             disabled={streaming || !question.trim()}
-            className="rounded-md border border-neutral-200 px-2.5 py-1.5 text-xs hover:bg-neutral-100 disabled:opacity-50"
+            className="btn-primary px-3.5 py-1.5 text-xs"
           >
             Ask
           </button>

@@ -13,14 +13,11 @@ export default async function SettingsPage() {
   return (
     <main className="mx-auto w-full max-w-2xl flex-1 px-6 py-12">
       <header>
-        <Link
-          href="/"
-          className="text-sm text-neutral-500 hover:text-neutral-900"
-        >
+        <Link href="/" className="text-sm font-medium text-ink hover:underline">
           ← MyNodebook
         </Link>
-        <h1 className="mt-2 text-2xl font-bold">Settings</h1>
-        <p className="mt-1 text-sm text-neutral-600">
+        <h1 className="mt-2 text-display font-semibold text-ink">Settings</h1>
+        <p className="mt-1 text-sm text-muted">
           Bring your own API key, or run fully local with Ollama. Keys are
           stored only in your local database.
         </p>

@@ -27,11 +27,11 @@ export function OutlinePreviewDialog({
     });
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-6">
-      <div className="flex max-h-[80vh] w-full max-w-lg flex-col rounded-lg border border-neutral-200 bg-white shadow-xl">
-        <div className="border-b border-neutral-200 px-5 py-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-6">
+      <div className="flex max-h-[80vh] w-full max-w-lg flex-col rounded-2xl border border-hairline bg-canvas shadow-[0_4px_12px_rgba(0,0,0,0.08)]">
+        <div className="border-b border-hairline-soft px-5 py-4">
           <h2 className="text-base font-semibold">Proposed outline</h2>
-          <p className="mt-1 text-sm text-neutral-600">
+          <p className="mt-1 text-sm text-muted">
             Review the structure generated from your sources. Accepting adds it
             to your outline — nothing is saved until then.
           </p>
@@ -45,7 +45,7 @@ export function OutlinePreviewDialog({
                 {group.nodes.map((node, ni) => (
                   <li key={ni} className="text-sm">
                     <span className="font-medium">{node.title}</span>
-                    <span className="block text-xs text-neutral-500">
+                    <span className="block text-xs text-muted">
                       {node.summary}
                     </span>
                   </li>
@@ -55,22 +55,22 @@ export function OutlinePreviewDialog({
           ))}
         </div>
 
-        <div className="border-t border-neutral-200 px-5 py-4">
+        <div className="border-t border-hairline-soft px-5 py-4">
           {error && (
-            <p className="mb-2 text-sm text-red-600">{error}</p>
+            <p className="mb-2 text-sm text-error">{error}</p>
           )}
           <div className="flex justify-end gap-2">
             <button
               onClick={onClose}
               disabled={pending}
-              className="rounded-md px-3 py-1.5 text-sm hover:bg-neutral-100"
+              className="btn-secondary"
             >
               Reject
             </button>
             <button
               onClick={accept}
               disabled={pending}
-              className="rounded-md bg-neutral-900 px-4 py-1.5 text-sm font-medium text-white hover:bg-neutral-700 disabled:opacity-50"
+              className="btn-primary"
             >
               {pending ? "Applying…" : "Accept"}
             </button>

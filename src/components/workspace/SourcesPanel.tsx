@@ -32,14 +32,12 @@ export function SourcesPanel({
   return (
     <div className="flex h-full flex-col">
       <div className="px-3 pt-3">
-        <h2 className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
-          Sources
-        </h2>
+        <h2 className="text-xs font-semibold text-muted">Sources</h2>
       </div>
 
       <div className="mt-2 flex-1 overflow-y-auto px-2">
         {sources.length === 0 ? (
-          <p className="px-1 py-4 text-sm text-neutral-500">
+          <p className="px-1 py-4 text-sm text-muted">
             No sources yet. Add a PDF, URL, or text to ground the AI.
           </p>
         ) : (
@@ -47,7 +45,7 @@ export function SourcesPanel({
             {sources.map((source) => (
               <li
                 key={source.id}
-                className="group rounded-md px-2 py-1.5 text-sm hover:bg-neutral-100"
+                className="group rounded-lg px-2 py-1.5 text-sm hover:bg-surface-soft"
               >
                 <div className="flex items-center gap-2">
                   <span className="shrink-0">{TYPE_ICONS[source.type]}</span>
@@ -62,13 +60,13 @@ export function SourcesPanel({
                     title="Delete source?"
                     message={`"${source.title}" will be removed from this workspace.`}
                     onConfirm={deleteSource.bind(null, source.id)}
-                    className="hidden shrink-0 rounded px-1 text-neutral-400 hover:text-red-600 group-hover:block"
+                    className="hidden shrink-0 rounded-md px-1 text-muted hover:text-error group-hover:block"
                   >
                     ×
                   </ConfirmButton>
                 </div>
                 {source.status === "error" && source.errorMessage && (
-                  <p className="mt-1 pl-6 text-xs text-red-600">
+                  <p className="mt-1 pl-6 text-xs text-error">
                     {source.errorMessage}
                   </p>
                 )}
@@ -78,7 +76,7 @@ export function SourcesPanel({
         )}
       </div>
 
-      <div className="border-t border-neutral-200 p-2">
+      <div className="border-t border-hairline p-2">
         {mode === "text" && (
           <TextForm
             pending={pending}
@@ -104,19 +102,19 @@ export function SourcesPanel({
             <button
               onClick={() => fileInput.current?.click()}
               disabled={pending}
-              className="flex-1 rounded-md border border-neutral-200 px-2 py-1.5 text-xs hover:bg-neutral-100 disabled:opacity-50"
+              className="btn-utility flex-1"
             >
               + PDF
             </button>
             <button
               onClick={() => setMode("url")}
-              className="flex-1 rounded-md border border-neutral-200 px-2 py-1.5 text-xs hover:bg-neutral-100"
+              className="btn-utility flex-1"
             >
               + URL
             </button>
             <button
               onClick={() => setMode("text")}
-              className="flex-1 rounded-md border border-neutral-200 px-2 py-1.5 text-xs hover:bg-neutral-100"
+              className="btn-utility flex-1"
             >
               + Text
             </button>
@@ -137,7 +135,7 @@ export function SourcesPanel({
           }}
         />
         {pending && (
-          <p className="mt-2 text-center text-xs text-neutral-500">
+          <p className="mt-2 text-center text-xs text-muted">
             Processing source…
           </p>
         )}
@@ -164,14 +162,14 @@ function TextForm({
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         placeholder="Title (optional)"
-        className="w-full rounded-md border border-neutral-200 bg-transparent px-2 py-1.5 text-xs outline-none"
+        className="input-field px-3 py-1.5 text-xs"
       />
       <textarea
         value={text}
         onChange={(e) => setText(e.target.value)}
         placeholder="Paste or write text…"
         rows={5}
-        className="w-full resize-none rounded-md border border-neutral-200 bg-transparent px-2 py-1.5 text-xs outline-none"
+        className="input-area resize-none px-3 py-1.5 text-xs"
       />
       <FormButtons
         disabled={pending || !text.trim()}
@@ -200,7 +198,7 @@ function UrlForm({
         onChange={(e) => setUrl(e.target.value)}
         placeholder="https://…"
         type="url"
-        className="w-full rounded-md border border-neutral-200 bg-transparent px-2 py-1.5 text-xs outline-none"
+        className="input-field px-3 py-1.5 text-xs"
       />
       <FormButtons
         disabled={pending || !url.trim()}
@@ -225,13 +223,13 @@ function FormButtons({
       <button
         onClick={onSubmit}
         disabled={disabled}
-        className="flex-1 rounded-md bg-neutral-900 px-2 py-1.5 text-xs font-medium text-white hover:bg-neutral-700 disabled:opacity-50"
+        className="btn-primary flex-1 px-2 py-1.5 text-xs"
       >
         Add
       </button>
       <button
         onClick={onCancel}
-        className="rounded-md border border-neutral-200 px-3 py-1.5 text-xs hover:bg-neutral-100"
+        className="btn-secondary px-3 py-1.5 text-xs"
       >
         Cancel
       </button>
@@ -243,10 +241,10 @@ function StatusBadge({ status }: { status: Source["status"] }) {
   if (status === "ready") return null;
   return (
     <span
-      className={`shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-medium ${
+      className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium ${
         status === "processing"
-          ? "bg-amber-100 text-amber-700"
-          : "bg-red-100 text-red-700"
+          ? "bg-surface-card text-muted"
+          : "bg-error/10 text-error"
       }`}
     >
       {status === "processing" ? "processing" : "error"}
