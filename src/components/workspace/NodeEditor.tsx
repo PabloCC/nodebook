@@ -53,8 +53,10 @@ function Editor({
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const latest = useRef({ title: node.title, content: node.content });
   const abortRef = useRef<AbortController | null>(null);
+  const pending = useRef<{ title: string; content: string } | null>(null);
 
   const persist = async (nextTitle: string, nextContent: string) => {
+    pending.current = null;
     setSaveState("saving");
     if (nextTitle.trim() && nextTitle !== latest.current.title) {
       await renameNode(node.id, nextTitle);
@@ -69,15 +71,29 @@ function Editor({
 
   const scheduleSave = (nextTitle: string, nextContent: string) => {
     setSaveState("dirty");
+    pending.current = { title: nextTitle, content: nextContent };
     if (timer.current) clearTimeout(timer.current);
     timer.current = setTimeout(() => persist(nextTitle, nextContent), AUTOSAVE_MS);
   };
 
   useEffect(() => {
-    return () => {
+    const flush = () => {
       if (timer.current) clearTimeout(timer.current);
+      if (pending.current) {
+        const { title, content } = pending.current;
+        void persist(title, content);
+      }
+    };
+    const onBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (pending.current) e.preventDefault();
+    };
+    window.addEventListener("beforeunload", onBeforeUnload);
+    return () => {
+      window.removeEventListener("beforeunload", onBeforeUnload);
+      flush();
       abortRef.current?.abort();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const runAction = async (action: NodeAction, question?: string) => {
