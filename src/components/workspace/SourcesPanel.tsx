@@ -26,6 +26,7 @@ export function SourcesPanel({
   sources: Source[];
 }) {
   const [mode, setMode] = useState<AddMode>(null);
+  const [viewing, setViewing] = useState<Source | null>(null);
   const [pending, startTransition] = useTransition();
   const fileInput = useRef<HTMLInputElement>(null);
 
@@ -49,12 +50,22 @@ export function SourcesPanel({
               >
                 <div className="flex items-center gap-2">
                   <span className="shrink-0">{TYPE_ICONS[source.type]}</span>
-                  <span
-                    className="min-w-0 flex-1 truncate"
-                    title={source.title}
-                  >
-                    {source.title}
-                  </span>
+                  {source.status === "ready" ? (
+                    <button
+                      onClick={() => setViewing(source)}
+                      title={source.title}
+                      className="min-w-0 flex-1 cursor-pointer truncate text-left hover:underline"
+                    >
+                      {source.title}
+                    </button>
+                  ) : (
+                    <span
+                      className="min-w-0 flex-1 truncate"
+                      title={source.title}
+                    >
+                      {source.title}
+                    </span>
+                  )}
                   <StatusBadge status={source.status} />
                   <ConfirmButton
                     title="Delete source?"
@@ -139,6 +150,62 @@ export function SourcesPanel({
             Processing source…
           </p>
         )}
+      </div>
+
+      <SourceViewerDialog source={viewing} onClose={() => setViewing(null)} />
+    </div>
+  );
+}
+
+function SourceViewerDialog({
+  source,
+  onClose,
+}: {
+  source: Source | null;
+  onClose: () => void;
+}) {
+  if (!source) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-6">
+      <div className="flex max-h-[80vh] w-full max-w-2xl flex-col rounded-2xl border border-hairline bg-canvas p-6 shadow-[0_4px_12px_rgba(0,0,0,0.08)]">
+        <div className="flex items-center gap-2">
+          <span className="shrink-0">{TYPE_ICONS[source.type]}</span>
+          <h2
+            className="min-w-0 flex-1 truncate text-base font-semibold"
+            title={source.title}
+          >
+            {source.title}
+          </h2>
+          <button onClick={onClose} className="btn-secondary shrink-0">
+            Close
+          </button>
+        </div>
+        <div className="mt-1 flex min-w-0 flex-wrap items-center gap-x-3 text-xs text-muted">
+          {source.type === "url" && source.originalRef && (
+            <a
+              href={source.originalRef}
+              target="_blank"
+              rel="noreferrer"
+              className="min-w-0 max-w-full truncate hover:underline"
+            >
+              {source.originalRef}
+            </a>
+          )}
+          <span className="shrink-0">
+            {source.content.length.toLocaleString()} chars
+          </span>
+        </div>
+        <p className="mt-2 text-xs text-muted">
+          This is the extracted text the AI uses as grounding.
+        </p>
+        <div className="mt-3 min-h-0 flex-1 overflow-y-auto whitespace-pre-wrap text-sm leading-relaxed">
+          {source.content ? (
+            source.content
+          ) : (
+            <span className="text-muted">No text was extracted.</span>
+          )}
+        </div>
       </div>
     </div>
   );

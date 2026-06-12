@@ -69,9 +69,12 @@ export async function moveNode(
   newParentId: string | null,
   newIndex: number
 ) {
-  const all = await db.select().from(nodes);
-  const node = all.find((n) => n.id === nodeId);
+  const [node] = await db.select().from(nodes).where(eq(nodes.id, nodeId));
   if (!node) return;
+  const all = await db
+    .select()
+    .from(nodes)
+    .where(eq(nodes.workspaceId, node.workspaceId));
 
   if (newParentId !== null) {
     const parent = all.find((n) => n.id === newParentId);
