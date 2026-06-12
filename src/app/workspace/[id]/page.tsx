@@ -3,6 +3,7 @@ import { asc, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { nodes, sources, workspaces } from "@/lib/db/schema";
 import { WorkspaceShell } from "@/components/workspace/WorkspaceShell";
+import { reconcileStaleSources } from "@/lib/sources";
 
 export default async function WorkspacePage({
   params,
@@ -16,6 +17,8 @@ export default async function WorkspacePage({
     .from(workspaces)
     .where(eq(workspaces.id, id));
   if (!workspace) notFound();
+
+  await reconcileStaleSources(id);
 
   const [allNodes, allSources] = await Promise.all([
     db
