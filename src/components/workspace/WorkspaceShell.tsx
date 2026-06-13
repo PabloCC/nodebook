@@ -8,6 +8,7 @@ import { OutlineTree } from "./OutlineTree";
 import { NodeEditor } from "./NodeEditor";
 import { SearchBox } from "./SearchBox";
 import { SourcesPanel } from "./SourcesPanel";
+import { BackIcon, ExportIcon } from "@/components/ui/icons";
 
 export function WorkspaceShell({
   workspace,
@@ -27,27 +28,29 @@ export function WorkspaceShell({
       <header className="flex h-14 shrink-0 items-center gap-3 border-b border-hairline bg-canvas px-4">
         <Link
           href="/"
-          className="text-sm font-medium text-muted hover:text-ink"
+          className="flex items-center gap-1.5 text-sm font-medium text-muted transition-colors hover:text-ink"
         >
-          ← MyNodebook
+          <BackIcon className="h-4 w-4" weight="bold" />
+          MyNodebook
         </Link>
         <span className="text-muted-soft">/</span>
-        <h1 className="truncate text-sm font-semibold text-ink">
+        <h1 className="truncate font-display text-[15px] text-ink">
           {workspace.name}
         </h1>
-        <span className="rounded-full bg-surface-card px-3 py-0.5 text-[13px] font-medium text-ink">
+        <span className="badge bg-surface-card text-muted">
           {workspace.type === "course" ? "Course" : "Study"}
         </span>
         <div className="ml-auto flex items-center gap-4">
           <a
             href={`/api/export/${workspace.id}`}
-            className="text-sm font-medium text-muted hover:text-ink"
+            className="flex items-center gap-1.5 text-sm font-medium text-muted transition-colors hover:text-ink"
           >
+            <ExportIcon className="h-4 w-4" weight="bold" />
             Export
           </a>
           <Link
             href="/settings"
-            className="text-sm font-medium text-muted hover:text-ink"
+            className="text-sm font-medium text-muted transition-colors hover:text-ink"
           >
             Settings
           </Link>

@@ -65,9 +65,9 @@ export function FlashcardStudy({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-6">
-      <div className="flex max-h-[80vh] w-full max-w-2xl flex-col rounded-2xl border border-hairline bg-canvas p-6 shadow-[0_4px_12px_rgba(0,0,0,0.08)]">
+      <div className="flex max-h-[80vh] w-full max-w-2xl flex-col rounded-2xl border border-hairline bg-canvas p-6 shadow-[0_8px_30px_rgba(0,0,0,0.12)]">
         <div className="flex items-center gap-3">
-          <h2 className="flex-1 text-base font-semibold">
+          <h2 className="flex-1 font-display text-lg text-ink">
             {done ? "Review complete" : `Card ${position + 1} of ${queue.length}`}
           </h2>
           <button onClick={onClose} className="btn-secondary shrink-0">
@@ -116,19 +116,19 @@ export function FlashcardStudy({
               className="mt-4 min-h-0 flex-1 cursor-pointer overflow-y-auto rounded-xl border border-hairline bg-surface-soft p-6 text-left"
               aria-label={flipped ? "Answer" : "Question — click to reveal answer"}
             >
-              <span className="mb-2 block text-xs font-semibold uppercase tracking-wide text-muted">
+              <span className="badge mb-2 block text-muted">
                 {flipped ? "Answer" : "Question"}
               </span>
-              <div className="prose prose-neutral max-w-none">
+              <div className="prose prose-neutral max-w-none dark:prose-invert">
                 <ReactMarkdown remarkPlugins={[remarkGfm]}>
                   {flipped ? card!.answer : card!.question}
                 </ReactMarkdown>
               </div>
             </button>
 
-            <div className="mt-4 flex shrink-0 justify-center gap-2">
+            <div className="mt-4 flex shrink-0 flex-col items-center gap-2">
               {flipped ? (
-                <>
+                <div className="flex justify-center gap-2">
                   <button
                     onClick={() => advance(false)}
                     className="btn-secondary"
@@ -141,11 +141,16 @@ export function FlashcardStudy({
                   >
                     Need review
                   </button>
-                </>
+                </div>
               ) : (
-                <button onClick={flip} className="btn-primary">
-                  Show answer
-                </button>
+                <>
+                  <button onClick={flip} className="btn-primary">
+                    Show answer
+                  </button>
+                  <p className="text-xs text-muted-soft">
+                    Press <kbd>Space</kbd> to flip
+                  </p>
+                </>
               )}
             </div>
           </>

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 // Type-only import: a value import would pull @/lib/db (better-sqlite3)
 // into the client bundle.
 import type { SearchResult } from "@/lib/search";
+import { SearchIcon } from "@/components/ui/icons";
 
 const DEBOUNCE_MS = 200;
 
@@ -63,15 +64,24 @@ export function SearchBox({
 
   return (
     <div className="px-2 pt-2">
-      <input
-        value={query}
-        onChange={(e) => onChange(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === "Escape") clear();
-        }}
-        placeholder="Search nodes…"
-        className="input-field px-3 py-1.5 text-xs"
-      />
+      <div className="relative">
+        <SearchIcon
+          className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-soft"
+          weight="bold"
+        />
+        <input
+          value={query}
+          onChange={(e) => onChange(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Escape") clear();
+          }}
+          placeholder="Search nodes…"
+          className="input-field py-1.5 pl-8 pr-10 text-xs"
+        />
+        {query.trim() !== "" && (
+          <kbd className="absolute right-2 top-1/2 -translate-y-1/2">Esc</kbd>
+        )}
+      </div>
       {query.trim() !== "" && (
         <ul className="mt-1 space-y-0.5">
           {results.length === 0 ? (
@@ -84,7 +94,7 @@ export function SearchBox({
                     onSelect(r.id);
                     clear();
                   }}
-                  className="w-full rounded-lg px-2 py-1.5 text-left text-sm hover:bg-canvas"
+                  className="w-full rounded-lg px-2 py-1.5 text-left text-sm transition-colors hover:bg-surface-card"
                 >
                   <span className="block truncate">{r.title}</span>
                   <span className="block truncate text-xs text-muted">

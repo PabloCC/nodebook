@@ -26,6 +26,14 @@ import {
 } from "@/lib/actions/nodes";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { OutlinePreviewDialog } from "./OutlinePreviewDialog";
+import {
+  AddIcon,
+  RenameIcon,
+  CloseIcon,
+  CollapsedIcon,
+  ExpandedIcon,
+  ExpandActionIcon,
+} from "@/components/ui/icons";
 
 export function OutlineTree({
   workspaceId,
@@ -152,12 +160,12 @@ export function OutlineTree({
   return (
     <div className="flex h-full flex-col">
       <div className="flex items-center justify-between px-3 pt-3">
-        <h2 className="text-xs font-semibold text-muted">Outline</h2>
+        <h2 className="badge text-muted">Outline</h2>
       </div>
 
       <div className="mt-2 flex-1 px-1">
         {tree.length === 0 ? (
-          <p className="px-2 py-4 text-sm text-muted">
+          <p className="px-2 py-4 text-sm leading-relaxed text-muted">
             No outline yet. Add a group or node below, or generate one from
             your sources.
           </p>
@@ -201,13 +209,15 @@ export function OutlineTree({
             onClick={() => addRoot("node")}
             className="btn-utility flex-1"
           >
-            + Node
+            <AddIcon className="h-3.5 w-3.5" weight="bold" />
+            Node
           </button>
           <button
             onClick={() => addRoot("group")}
             className="btn-utility flex-1"
           >
-            + Group
+            <AddIcon className="h-3.5 w-3.5" weight="bold" />
+            Group
           </button>
         </div>
         <button
@@ -216,9 +226,10 @@ export function OutlineTree({
           title={
             hasReadySources ? undefined : "Add a source first to generate an outline"
           }
-          className="btn-primary w-full px-2 py-1.5 text-xs"
+          className="btn-primary w-full gap-1.5 px-2 py-1.5 text-xs"
         >
-          {generating ? "Generating…" : "Generate Outline"}
+          <ExpandActionIcon className="h-3.5 w-3.5" weight="bold" />
+          {generating ? "Generating…" : "Generate outline"}
         </button>
       </div>
 
@@ -282,25 +293,31 @@ function TreeItem({
       <div
         {...attributes}
         {...listeners}
-        className={`group flex items-center gap-1 rounded-lg px-2 py-1 text-sm ${
+        className={`group flex items-center gap-1 rounded-lg px-2 py-1 text-sm transition-colors ${
           isDropTarget
             ? "bg-accent/10 outline-2 outline-accent"
             : isSelected
-              ? "bg-canvas shadow-[0_1px_2px_rgba(0,0,0,0.05)]"
-              : "hover:bg-surface-soft"
+              ? "bg-accent/12 text-ink"
+              : "hover:bg-surface-card"
         }`}
         style={{ paddingLeft: `${8 + depth * 14}px` }}
       >
         {isGroup ? (
           <button
             onClick={() => setCollapsed((c) => !c)}
-            className="w-4 shrink-0 text-muted"
+            className="flex w-4 shrink-0 items-center justify-center text-muted"
             aria-label={collapsed ? "Expand group" : "Collapse group"}
           >
-            {collapsed ? "▸" : "▾"}
+            {collapsed ? (
+              <CollapsedIcon className="h-3.5 w-3.5" weight="bold" />
+            ) : (
+              <ExpandedIcon className="h-3.5 w-3.5" weight="bold" />
+            )}
           </button>
         ) : (
-          <span className="w-4 shrink-0 text-center text-muted">·</span>
+          <span className="flex w-4 shrink-0 items-center justify-center text-muted-soft">
+            <span className="h-1 w-1 rounded-full bg-current" />
+          </span>
         )}
 
         {editing ? (
@@ -327,7 +344,7 @@ function TreeItem({
           </button>
         )}
 
-        <span className="hidden shrink-0 gap-0.5 group-hover:flex">
+        <span className="hidden shrink-0 items-center gap-0.5 group-hover:flex">
           {isGroup && (
             <button
               onClick={() =>
@@ -338,24 +355,24 @@ function TreeItem({
                 })
               }
               title="Add node inside"
-              className="rounded-md px-1 text-muted hover:text-ink"
+              className="rounded-md p-1 text-muted transition-colors hover:text-ink"
             >
-              +
+              <AddIcon className="h-3.5 w-3.5" weight="bold" />
             </button>
           )}
           <button
             onClick={() => setEditing(true)}
             title="Rename"
-            className="rounded-md px-1 text-muted hover:text-ink"
+            className="rounded-md p-1 text-muted transition-colors hover:text-ink"
           >
-            ✎
+            <RenameIcon className="h-3.5 w-3.5" weight="bold" />
           </button>
           <button
             onClick={() => setConfirmingDelete(true)}
             title="Delete"
-            className="rounded-md px-1 text-muted hover:text-error"
+            className="rounded-md p-1 text-muted transition-colors hover:text-error"
           >
-            ×
+            <CloseIcon className="h-3.5 w-3.5" weight="bold" />
           </button>
         </span>
       </div>

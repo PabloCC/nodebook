@@ -15,24 +15,24 @@ export default async function Home() {
     .orderBy(desc(workspaces.createdAt));
 
   return (
-    <main className="mx-auto w-full max-w-3xl flex-1 px-6 py-12">
-      <header className="flex items-center justify-between">
+    <main className="mx-auto w-full max-w-3xl flex-1 px-6 py-16">
+      <header className="flex items-end justify-between">
         <div>
-          <h1 className="text-display font-semibold text-ink">MyNodebook</h1>
-          <p className="mt-1 text-sm text-muted">
+          <h1 className="font-display text-display text-ink">MyNodebook</h1>
+          <p className="mt-2 max-w-md text-sm leading-relaxed text-muted">
             Build, organize, and study structured knowledge from your sources.
           </p>
         </div>
         <Link
           href="/settings"
-          className="text-sm font-medium text-ink hover:underline"
+          className="text-sm font-medium text-muted transition-colors hover:text-ink"
         >
           Settings
         </Link>
       </header>
 
-      <section className="mt-10">
-        <h2 className="text-sm font-semibold text-ink">New workspace</h2>
+      <section className="mt-12">
+        <h2 className="badge text-muted">New workspace</h2>
         <form
           action={createWorkspace}
           className="mt-3 flex flex-wrap items-center gap-2"
@@ -57,21 +57,24 @@ export default async function Home() {
         </form>
       </section>
 
-      <section className="mt-10">
-        <h2 className="text-sm font-semibold text-ink">Workspaces</h2>
+      <section className="mt-12">
+        <h2 className="badge text-muted">Workspaces</h2>
         {all.length === 0 ? (
-          <p className="mt-3 text-sm text-muted">
-            No workspaces yet. Create one above to get started.
-          </p>
+          <div className="mt-3 rounded-xl border border-dashed border-hairline px-6 py-12 text-center">
+            <p className="font-display text-lg text-ink">Nothing here yet</p>
+            <p className="mt-1.5 text-sm text-muted">
+              Create your first workspace above to start collecting sources.
+            </p>
+          </div>
         ) : (
-          <ul className="mt-3 divide-y divide-hairline-soft rounded-xl border border-hairline bg-canvas">
+          <ul className="mt-3 divide-y divide-hairline-soft overflow-hidden rounded-xl border border-hairline bg-canvas">
             {all.map((ws) => (
               <li
                 key={ws.id}
-                className="flex items-center justify-between gap-4 px-5 py-3.5"
+                className="group flex items-center justify-between gap-4 px-5 py-4 transition-colors hover:bg-surface-soft"
               >
                 <Link href={`/workspace/${ws.id}`} className="min-w-0 flex-1">
-                  <span className="block truncate font-medium hover:underline">
+                  <span className="block truncate font-display text-[17px] text-ink">
                     {ws.name}
                   </span>
                   <span className="mt-0.5 block text-xs text-muted">
@@ -83,7 +86,7 @@ export default async function Home() {
                   title="Delete workspace?"
                   message={`"${ws.name}" and all of its sources and notes will be permanently deleted.`}
                   onConfirm={deleteWorkspace.bind(null, ws.id)}
-                  className="rounded-lg px-2.5 py-1 text-xs font-medium text-muted hover:text-error"
+                  className="rounded-lg px-2.5 py-1 text-xs font-medium text-muted opacity-0 transition-[color,opacity] hover:text-error group-hover:opacity-100"
                 >
                   Delete
                 </ConfirmButton>

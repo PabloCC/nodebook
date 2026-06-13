@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { saveSettings } from "@/lib/actions/settings";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 
 const OPENAI_MODEL_SUGGESTIONS = ["gpt-5", "gpt-5-mini", "gpt-4o"];
 const ANTHROPIC_MODEL_SUGGESTIONS = [
@@ -42,6 +43,16 @@ export function SettingsForm({
       }
       className="mt-8 space-y-8"
     >
+      <fieldset>
+        <legend className="text-sm font-semibold">Appearance</legend>
+        <p className="mt-1 text-xs text-muted">
+          Theme is stored in this browser, separate from your provider settings.
+        </p>
+        <div className="mt-3">
+          <ThemeToggle />
+        </div>
+      </fieldset>
+
       <fieldset>
         <legend className="text-sm font-semibold">AI provider</legend>
         <div className="pill-group mt-3">

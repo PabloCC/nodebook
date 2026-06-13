@@ -3,18 +3,27 @@
 import { useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import type { Icon } from "@phosphor-icons/react";
 import type { NodeAction } from "@/lib/ai/prompts";
+import {
+  ExpandActionIcon,
+  RewriteActionIcon,
+  SummarizeActionIcon,
+  FlashcardsActionIcon,
+  StudyIcon,
+  StopIcon,
+} from "@/components/ui/icons";
 
 const ACTION_BUTTONS: {
   action: NodeAction;
   label: string;
-  icon: string;
+  Icon: Icon;
   className: string;
 }[] = [
-  { action: "expand", label: "Expand", icon: "✦", className: "btn-action-expand" },
-  { action: "rewrite", label: "Rewrite", icon: "↻", className: "btn-action-rewrite" },
-  { action: "summarize", label: "Summarize", icon: "≡", className: "btn-action-summarize" },
-  { action: "flashcards", label: "Flashcards", icon: "◳", className: "btn-action-flashcards" },
+  { action: "expand", label: "Expand", Icon: ExpandActionIcon, className: "btn-action-expand" },
+  { action: "rewrite", label: "Rewrite", Icon: RewriteActionIcon, className: "btn-action-rewrite" },
+  { action: "summarize", label: "Summarize", Icon: SummarizeActionIcon, className: "btn-action-summarize" },
+  { action: "flashcards", label: "Flashcards", Icon: FlashcardsActionIcon, className: "btn-action-flashcards" },
 ];
 
 export function AiActionBar({
@@ -30,14 +39,14 @@ export function AiActionBar({
 }) {
   return (
     <div className="flex flex-wrap items-center gap-2 border-t border-hairline-soft pt-3">
-      {ACTION_BUTTONS.map(({ action, label, icon, className }) => (
+      {ACTION_BUTTONS.map(({ action, label, Icon, className }) => (
         <button
           key={action}
           onClick={() => onRun(action)}
           disabled={disabled}
           className={`btn-action ${className}`}
         >
-          <span aria-hidden>{icon}</span>
+          <Icon className="h-3.5 w-3.5" weight="bold" aria-hidden />
           {label}
         </button>
       ))}
@@ -47,7 +56,7 @@ export function AiActionBar({
           disabled={disabled}
           className="btn-action btn-action-flashcards"
         >
-          <span aria-hidden>▶</span>
+          <StudyIcon className="h-3.5 w-3.5" weight="fill" aria-hidden />
           Study ({cardCount})
         </button>
       )}
@@ -125,15 +134,16 @@ export function ReviewPanel({
   return (
     <div className="flex h-full flex-col rounded-xl border border-hairline bg-surface-soft">
       <div className="flex items-center gap-2 border-b border-hairline px-4 py-2.5">
-        <span className="flex-1 text-xs font-semibold text-muted">
+        <span className="badge flex-1 text-muted">
           {ACTION_TITLES[action]} · review
         </span>
         {streaming ? (
           <button
             onClick={onStop}
-            className="rounded-lg border border-error/40 px-2.5 py-1.5 text-xs font-medium text-error active:bg-error/10"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-error/40 px-2.5 py-1.5 text-xs font-medium text-error transition-colors active:bg-error/10"
           >
-            ■ Stop
+            <StopIcon className="h-3 w-3" weight="fill" aria-hidden />
+            Stop
           </button>
         ) : (
           <>
@@ -152,7 +162,7 @@ export function ReviewPanel({
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">
         {text.trim() ? (
-          <div className="prose prose-neutral max-w-none">
+          <div className="prose prose-neutral max-w-none dark:prose-invert">
             <ReactMarkdown remarkPlugins={[remarkGfm]}>{text}</ReactMarkdown>
           </div>
         ) : (

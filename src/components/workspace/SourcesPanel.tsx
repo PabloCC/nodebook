@@ -9,12 +9,31 @@ import {
   deleteSource,
 } from "@/lib/actions/sources";
 import { ConfirmButton } from "@/components/ui/ConfirmDialog";
+import type { Icon } from "@phosphor-icons/react";
+import {
+  PdfIcon,
+  UrlIcon,
+  TextIcon,
+  AddIcon,
+  CloseIcon,
+} from "@/components/ui/icons";
 
-const TYPE_ICONS: Record<Source["type"], string> = {
-  pdf: "📄",
-  url: "🔗",
-  text: "📝",
+const TYPE_ICONS: Record<Source["type"], Icon> = {
+  pdf: PdfIcon,
+  url: UrlIcon,
+  text: TextIcon,
 };
+
+function SourceTypeIcon({
+  type,
+  className,
+}: {
+  type: Source["type"];
+  className?: string;
+}) {
+  const Glyph = TYPE_ICONS[type];
+  return <Glyph className={className} weight="bold" aria-hidden />;
+}
 
 type AddMode = null | "text" | "url";
 
@@ -33,12 +52,12 @@ export function SourcesPanel({
   return (
     <div className="flex h-full flex-col">
       <div className="px-3 pt-3">
-        <h2 className="text-xs font-semibold text-muted">Sources</h2>
+        <h2 className="badge text-muted">Sources</h2>
       </div>
 
       <div className="mt-2 flex-1 overflow-y-auto px-2">
         {sources.length === 0 ? (
-          <p className="px-1 py-4 text-sm text-muted">
+          <p className="px-1 py-4 text-sm leading-relaxed text-muted">
             No sources yet. Add a PDF, URL, or text to ground the AI.
           </p>
         ) : (
@@ -46,10 +65,13 @@ export function SourcesPanel({
             {sources.map((source) => (
               <li
                 key={source.id}
-                className="group rounded-lg px-2 py-1.5 text-sm hover:bg-surface-soft"
+                className="group rounded-lg px-2 py-1.5 text-sm transition-colors hover:bg-surface-card"
               >
                 <div className="flex items-center gap-2">
-                  <span className="shrink-0">{TYPE_ICONS[source.type]}</span>
+                  <SourceTypeIcon
+                    type={source.type}
+                    className="h-4 w-4 shrink-0 text-muted"
+                  />
                   {source.status === "ready" ? (
                     <button
                       onClick={() => setViewing(source)}
@@ -71,9 +93,9 @@ export function SourcesPanel({
                     title="Delete source?"
                     message={`"${source.title}" will be removed from this workspace.`}
                     onConfirm={deleteSource.bind(null, source.id)}
-                    className="hidden shrink-0 rounded-md px-1 text-muted hover:text-error group-hover:block"
+                    className="hidden shrink-0 rounded-md p-1 text-muted transition-colors hover:text-error group-hover:block"
                   >
-                    ×
+                    <CloseIcon className="h-3.5 w-3.5" weight="bold" />
                   </ConfirmButton>
                 </div>
                 {source.status === "error" && source.errorMessage && (
@@ -115,19 +137,22 @@ export function SourcesPanel({
               disabled={pending}
               className="btn-utility flex-1"
             >
-              + PDF
+              <AddIcon className="h-3.5 w-3.5" weight="bold" />
+              PDF
             </button>
             <button
               onClick={() => setMode("url")}
               className="btn-utility flex-1"
             >
-              + URL
+              <AddIcon className="h-3.5 w-3.5" weight="bold" />
+              URL
             </button>
             <button
               onClick={() => setMode("text")}
               className="btn-utility flex-1"
             >
-              + Text
+              <AddIcon className="h-3.5 w-3.5" weight="bold" />
+              Text
             </button>
           </div>
         )}
@@ -168,11 +193,14 @@ function SourceViewerDialog({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-6">
-      <div className="flex max-h-[80vh] w-full max-w-2xl flex-col rounded-2xl border border-hairline bg-canvas p-6 shadow-[0_4px_12px_rgba(0,0,0,0.08)]">
+      <div className="flex max-h-[80vh] w-full max-w-2xl flex-col rounded-2xl border border-hairline bg-canvas p-6 shadow-[0_8px_30px_rgba(0,0,0,0.12)]">
         <div className="flex items-center gap-2">
-          <span className="shrink-0">{TYPE_ICONS[source.type]}</span>
+          <SourceTypeIcon
+            type={source.type}
+            className="h-5 w-5 shrink-0 text-muted"
+          />
           <h2
-            className="min-w-0 flex-1 truncate text-base font-semibold"
+            className="min-w-0 flex-1 truncate font-display text-lg text-ink"
             title={source.title}
           >
             {source.title}
@@ -308,13 +336,13 @@ function StatusBadge({ status }: { status: Source["status"] }) {
   if (status === "ready") return null;
   return (
     <span
-      className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium ${
+      className={`badge shrink-0 ${
         status === "processing"
           ? "bg-surface-card text-muted"
           : "bg-error/10 text-error"
       }`}
     >
-      {status === "processing" ? "processing" : "error"}
+      {status === "processing" ? "Processing" : "Error"}
     </span>
   );
 }

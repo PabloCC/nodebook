@@ -20,6 +20,7 @@
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
     "@mozilla/readability": "^0.6.0",
+    "@phosphor-icons/react": "^2.1.10",
     "ai": "^6.0.199",
     "better-sqlite3": "^12.10.0",
     "drizzle-orm": "^0.45.2",

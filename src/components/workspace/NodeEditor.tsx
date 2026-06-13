@@ -197,10 +197,10 @@ function Editor({
             scheduleSave(e.target.value, content);
           }}
           placeholder="Untitled node"
-          className="min-w-0 flex-1 bg-transparent text-display font-semibold text-ink outline-none placeholder:text-muted-soft"
+          className="min-w-0 flex-1 bg-transparent font-display text-display text-ink outline-none placeholder:text-muted-soft"
         />
         <span
-          className={`shrink-0 rounded-full bg-surface-soft px-2 py-0.5 text-[11px] font-medium ${
+          className={`badge shrink-0 bg-surface-card ${
             streaming
               ? "text-action-flashcards"
               : saveState === "saved"
@@ -255,7 +255,7 @@ function Editor({
             onStop={() => abortRef.current?.abort()}
           />
         ) : preview ? (
-          <div className="prose prose-neutral h-full max-w-none overflow-y-auto">
+          <div className="prose prose-neutral h-full max-w-none overflow-y-auto dark:prose-invert">
             {content.trim() ? (
               <ReactMarkdown remarkPlugins={[remarkGfm]}>
                 {content}

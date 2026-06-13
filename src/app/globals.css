@@ -1,50 +1,118 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
-@theme {
-  /* Action and accent */
-  --color-primary: #111111;
-  --color-primary-active: #242424;
-  --color-accent: #3b82f6;
+/* Dark mode is driven by a `.dark` class on <html> (set pre-paint in layout). */
+@custom-variant dark (&:where(.dark, .dark *));
 
-  /* Surfaces */
-  --color-canvas: #ffffff;
-  --color-surface-soft: #f8f9fa;
-  --color-surface-card: #f5f5f5;
-  --color-surface-strong: #e5e7eb;
+/* ── Semantic tokens ───────────────────────────────────────────────────────
+   Raw values live in :root / .dark so they flip at runtime; @theme inline
+   below maps them onto Tailwind color utilities (bg-canvas, text-ink, …). */
+:root {
+  /* Action / CTA */
+  --primary: #20201e; /* warm near-black */
+  --primary-active: #3a3a36;
+  --primary-fg: #fbfbfa; /* text on a primary surface */
+  --accent: #a8573e; /* single warm clay accent, used sparingly */
+
+  /* Surfaces — warm bone monochrome */
+  --canvas: #fbfbfa;
+  --surface-soft: #f5f4f1;
+  --surface-card: #efeeea;
+  --surface-strong: #e5e3dd;
 
   /* Text */
-  --color-ink: #111111;
-  --color-body: #374151;
-  --color-muted: #6b7280;
-  --color-muted-soft: #898989;
+  --ink: #20201e;
+  --body: #3a3a36;
+  --muted: #78756e;
+  --muted-soft: #a6a29a;
 
   /* Hairlines */
-  --color-hairline: #e5e7eb;
-  --color-hairline-soft: #f3f4f6;
+  --hairline: rgba(0, 0, 0, 0.08);
+  --hairline-soft: rgba(0, 0, 0, 0.045);
 
-  /* Semantic */
-  --color-success: #10b981;
-  --color-warning: #f59e0b;
-  --color-error: #ef4444;
+  /* Semantic — desaturated to sit inside the warm palette */
+  --success: #4f7a4e;
+  --warning: #a8762f;
+  --error: #b4453c;
 
-  /* AI action tints — readable as full-strength text on a 10% tint */
-  --color-action-expand: #2563eb; /* blue */
-  --color-action-rewrite: #b45309; /* amber */
-  --color-action-summarize: #047857; /* green */
-  --color-action-flashcards: #7c3aed; /* violet */
+  /* AI action tints — muted hues, rendered as 10–20% washes + colored text */
+  --action-expand: #2f6c93; /* dusty blue */
+  --action-rewrite: #9a6a2e; /* ochre */
+  --action-summarize: #4a7a4d; /* sage green */
+  --action-flashcards: #7a5e9e; /* muted violet */
+}
 
-  /* Display type — Cal Sans substituted with Inter 600 + negative tracking */
-  --text-display: 28px;
-  --text-display--line-height: 1.2;
-  --text-display--letter-spacing: -0.5px;
+.dark {
+  --primary: #ecebe4; /* light CTA on dark */
+  --primary-active: #cfcdc4;
+  --primary-fg: #1a1a18;
+  --accent: #cd8163;
+
+  --canvas: #181816;
+  --surface-soft: #211f1d;
+  --surface-card: #2a2825;
+  --surface-strong: #353330;
+
+  --ink: #edebE4;
+  --body: #cbc8c0;
+  --muted: #9a958b;
+  --muted-soft: #6c685f;
+
+  --hairline: rgba(255, 255, 255, 0.1);
+  --hairline-soft: rgba(255, 255, 255, 0.05);
+
+  --success: #7faa6f;
+  --warning: #cf9d4f;
+  --error: #d97268;
+
+  --action-expand: #7eb1d4;
+  --action-rewrite: #d3a567;
+  --action-summarize: #88bd86;
+  --action-flashcards: #b69ed6;
 }
 
 @theme inline {
-  --font-sans: var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI",
+  --color-primary: var(--primary);
+  --color-primary-active: var(--primary-active);
+  --color-primary-fg: var(--primary-fg);
+  --color-accent: var(--accent);
+
+  --color-canvas: var(--canvas);
+  --color-surface-soft: var(--surface-soft);
+  --color-surface-card: var(--surface-card);
+  --color-surface-strong: var(--surface-strong);
+
+  --color-ink: var(--ink);
+  --color-body: var(--body);
+  --color-muted: var(--muted);
+  --color-muted-soft: var(--muted-soft);
+
+  --color-hairline: var(--hairline);
+  --color-hairline-soft: var(--hairline-soft);
+
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-error: var(--error);
+
+  --color-action-expand: var(--action-expand);
+  --color-action-rewrite: var(--action-rewrite);
+  --color-action-summarize: var(--action-summarize);
+  --color-action-flashcards: var(--action-flashcards);
+
+  /* Display type — editorial serif, tight tracking */
+  --text-display: 30px;
+  --text-display--line-height: 1.15;
+  --text-display--letter-spacing: -0.6px;
+
+  --font-sans: var(--font-geist), -apple-system, BlinkMacSystemFont, "Segoe UI",
     Roboto, sans-serif;
-  --font-mono: ui-monospace, "SF Mono", SFMono-Regular, var(--font-geist-mono),
+  --font-display: var(--font-newsreader), Georgia, "Times New Roman", serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, "SF Mono", SFMono-Regular,
     monospace;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
@@ -56,7 +124,7 @@ body {
 /* Editor prose: body-md running text with ink headlines */
 .prose {
   font-size: 16px;
-  line-height: 1.5;
+  line-height: 1.65;
   letter-spacing: 0;
   color: var(--color-body);
 }
@@ -65,79 +133,105 @@ body {
 }
 .prose :where(h1, h2, h3, h4) {
   color: var(--color-ink);
+  font-family: var(--font-display);
   letter-spacing: -0.3px;
 }
 
+/* Physical keycap for shortcut hints */
+kbd {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1;
+  padding: 2px 5px;
+  border: 1px solid var(--color-hairline);
+  border-radius: 5px;
+  background: var(--color-surface-card);
+  color: var(--color-muted);
+}
+
 @layer components {
-  /* Near-black CTA — press darkens, nothing else changes */
+  /* Near-black CTA — press darkens, subtle physical press on active */
   .btn-primary {
     @apply inline-flex items-center justify-center rounded-lg bg-primary px-4 py-2
-      text-sm font-semibold text-white active:bg-primary-active
-      focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink
-      disabled:opacity-50;
+      text-sm font-semibold text-primary-fg transition-[background-color,transform] duration-150
+      hover:bg-primary-active active:scale-[0.98]
+      focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent
+      disabled:opacity-40 disabled:active:scale-100;
   }
 
-  /* White button with hairline outline */
+  /* Outlined button with hairline */
   .btn-secondary {
     @apply inline-flex items-center justify-center rounded-lg border border-hairline bg-canvas
-      px-4 py-2 text-sm font-medium text-ink active:bg-surface-card
-      focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink
-      disabled:opacity-50;
+      px-4 py-2 text-sm font-medium text-ink transition-colors duration-150
+      hover:bg-surface-soft active:scale-[0.98]
+      focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent
+      disabled:opacity-40 disabled:active:scale-100;
   }
 
   /* Compact secondary for panel and toolbar actions */
   .btn-utility {
-    @apply inline-flex items-center justify-center rounded-lg border border-hairline bg-canvas
-      px-2.5 py-1.5 text-xs font-medium text-ink active:bg-surface-card
-      focus-visible:outline-2 focus-visible:outline-ink
-      disabled:opacity-50;
+    @apply inline-flex items-center justify-center gap-1.5 rounded-lg border border-hairline bg-canvas
+      px-2.5 py-1.5 text-xs font-medium text-ink transition-colors duration-150
+      hover:bg-surface-soft active:scale-[0.98]
+      focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-accent
+      disabled:opacity-40 disabled:active:scale-100;
   }
 
-  /* Destructive — semantic error red */
+  /* Destructive — semantic error */
   .btn-destructive {
     @apply inline-flex items-center justify-center rounded-lg bg-error px-4 py-2
-      text-sm font-semibold text-white active:opacity-90 disabled:opacity-50;
+      text-sm font-semibold text-white transition-[background-color,transform] duration-150
+      active:scale-[0.98] disabled:opacity-40 disabled:active:scale-100;
   }
 
   /* Standard text input — focus shifts the border to ink, no ring */
   .input-field {
     @apply w-full rounded-lg border border-hairline bg-canvas px-3.5 py-2 text-sm text-ink
-      outline-none placeholder:text-muted-soft focus:border-ink disabled:opacity-50;
+      transition-colors duration-150 outline-none placeholder:text-muted-soft
+      focus:border-ink disabled:opacity-50;
   }
 
   /* Multiline variant */
   .input-area {
     @apply w-full rounded-lg border border-hairline bg-canvas px-3.5 py-2 text-ink
-      outline-none placeholder:text-muted-soft focus:border-ink disabled:opacity-50;
+      transition-colors duration-150 outline-none placeholder:text-muted-soft
+      focus:border-ink disabled:opacity-50;
   }
 
-  /* Soft-tinted AI action buttons — light tint bg + colored text/icon */
+  /* Soft-tinted AI action buttons — light wash bg + colored text/icon */
   .btn-action {
     @apply inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium
-      transition-colors disabled:opacity-40
-      focus-visible:outline-2 focus-visible:outline-offset-1;
+      transition-colors duration-150 active:scale-[0.98] disabled:opacity-40
+      focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-current;
   }
   .btn-action-expand {
-    @apply bg-action-expand/10 text-action-expand hover:bg-action-expand/20;
+    @apply bg-action-expand/12 text-action-expand hover:bg-action-expand/20;
   }
   .btn-action-rewrite {
-    @apply bg-action-rewrite/10 text-action-rewrite hover:bg-action-rewrite/20;
+    @apply bg-action-rewrite/12 text-action-rewrite hover:bg-action-rewrite/20;
   }
   .btn-action-summarize {
-    @apply bg-action-summarize/10 text-action-summarize hover:bg-action-summarize/20;
+    @apply bg-action-summarize/12 text-action-summarize hover:bg-action-summarize/20;
   }
   .btn-action-flashcards {
-    @apply bg-action-flashcards/10 text-action-flashcards hover:bg-action-flashcards/20;
+    @apply bg-action-flashcards/12 text-action-flashcards hover:bg-action-flashcards/20;
   }
 
-  /* nav-pill-group: pill wrapper with white active tab inside */
+  /* Segmented control — flat active tab, no shadow */
   .pill-group {
-    @apply inline-flex items-center gap-1 rounded-full bg-surface-soft p-1.5;
+    @apply inline-flex items-center gap-1 rounded-lg bg-surface-soft p-1;
   }
   .pill-tab {
-    @apply rounded-lg px-3.5 py-1.5 text-sm font-medium text-muted;
+    @apply rounded-md px-3.5 py-1.5 text-sm font-medium text-muted transition-colors duration-150
+      hover:text-ink;
   }
   .pill-tab-active {
-    @apply bg-canvas text-ink shadow-[0_1px_2px_rgba(0,0,0,0.05)];
+    @apply bg-surface-strong text-ink hover:text-ink;
+  }
+
+  /* Small uppercase status/category label */
+  .badge {
+    @apply inline-flex items-center rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase
+      tracking-[0.06em] tabular-nums;
   }
 }
