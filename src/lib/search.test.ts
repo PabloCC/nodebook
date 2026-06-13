@@ -24,6 +24,7 @@ vi.mock("@/lib/db", async () => {
       parent_id text REFERENCES nodes(id) ON DELETE CASCADE,
       title text NOT NULL,
       content text NOT NULL DEFAULT '',
+      flashcards text NOT NULL DEFAULT '',
       position integer NOT NULL,
       type text NOT NULL,
       created_at integer NOT NULL,

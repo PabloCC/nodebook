@@ -1,12 +1,18 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import type { OutlineNode } from "@/lib/db/schema";
 import type { NodeAction } from "@/lib/ai/prompts";
-import { renameNode, updateNodeContent } from "@/lib/actions/nodes";
-import { AiToolbar } from "./AiToolbar";
+import {
+  renameNode,
+  updateNodeContent,
+  updateNodeFlashcards,
+} from "@/lib/actions/nodes";
+import { parseFlashcards } from "@/lib/flashcards";
+import { AiActionBar, AskBar, ReviewPanel } from "./AiToolbar";
+import { FlashcardStudy } from "./FlashcardStudy";
 
 const AUTOSAVE_MS = 800;
 
@@ -50,6 +56,14 @@ function Editor({
   );
   const [streaming, setStreaming] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
+  const [studying, setStudying] = useState(false);
+  const [flashcards, setFlashcards] = useState(node.flashcards ?? "");
+  const [review, setReview] = useState<{
+    action: NodeAction;
+    text: string;
+  } | null>(null);
+  const cards = useMemo(() => parseFlashcards(flashcards), [flashcards]);
+  const busy = streaming || review !== null;
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const latest = useRef({ title: node.title, content: node.content });
   const abortRef = useRef<AbortController | null>(null);
@@ -100,16 +114,13 @@ function Editor({
     setAiError(null);
     if (timer.current) clearTimeout(timer.current);
 
-    const replace = action === "summarize" || action === "rewrite";
-    let acc = replace
-      ? ""
-      : content.trim()
-        ? content.replace(/\s+$/, "") + "\n\n"
-        : "";
-
+    let acc = "";
     const controller = new AbortController();
     abortRef.current = controller;
     setStreaming(true);
+    // Stream into the review buffer — nothing is written to the node until
+    // the user accepts. Content/flashcards stay untouched here.
+    setReview({ action, text: "" });
     try {
       // Save first so the server-side context sees the latest content.
       await persist(title, content);
@@ -125,31 +136,56 @@ function Editor({
           error?: string;
         } | null;
         setAiError(data?.error ?? "AI request failed.");
+        setReview(null);
         return;
       }
 
-      setContent(acc);
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
         acc += decoder.decode(value, { stream: true });
-        setContent(acc);
+        setReview({ action, text: acc });
       }
-      await persist(title, acc);
     } catch (err) {
       const aborted = err instanceof DOMException && err.name === "AbortError";
       if (!aborted) {
         setAiError("The AI response was interrupted. Partial output was kept.");
       }
-      // Keep whatever streamed in, even on stop/interruption.
-      if (acc) await persist(title, acc);
+      // Keep whatever streamed in for review; drop an empty buffer.
+      if (!acc) setReview(null);
     } finally {
       setStreaming(false);
       abortRef.current = null;
     }
   };
+
+  const acceptReview = () => {
+    if (!review) return;
+    const { action, text } = review;
+    if (action === "flashcards") {
+      setFlashcards(text);
+      void updateNodeFlashcards(node.id, text);
+    } else if (action === "summarize" || action === "rewrite") {
+      setContent(text);
+      void persist(title, text);
+    } else {
+      const next = content.trim()
+        ? content.replace(/\s+$/, "") + "\n\n" + text
+        : text;
+      setContent(next);
+      void persist(title, next);
+    }
+    setReview(null);
+  };
+
+  const reviewAddLabel = (action: NodeAction) =>
+    action === "flashcards"
+      ? "Save to deck"
+      : action === "summarize" || action === "rewrite"
+        ? "Replace node"
+        : "Add to node";
 
   return (
     <div className="mx-auto flex h-full max-w-3xl flex-col px-8 py-8">
@@ -163,7 +199,17 @@ function Editor({
           placeholder="Untitled node"
           className="min-w-0 flex-1 bg-transparent text-display font-semibold text-ink outline-none placeholder:text-muted-soft"
         />
-        <span className="shrink-0 text-xs text-muted">
+        <span
+          className={`shrink-0 rounded-full bg-surface-soft px-2 py-0.5 text-[11px] font-medium ${
+            streaming
+              ? "text-action-flashcards"
+              : saveState === "saved"
+                ? "text-muted"
+                : saveState === "saving"
+                  ? "text-action-expand"
+                  : "text-action-rewrite"
+          }`}
+        >
           {streaming
             ? "Generating…"
             : saveState === "saved"
@@ -188,8 +234,27 @@ function Editor({
         </div>
       </div>
 
-      <div className="mt-4 min-h-0 flex-1">
-        {preview ? (
+      <div className="mt-3">
+        <AiActionBar
+          disabled={busy}
+          onRun={runAction}
+          cardCount={cards.length}
+          onStudy={() => setStudying(true)}
+        />
+      </div>
+
+      <div className="mt-3 min-h-0 flex-1">
+        {review ? (
+          <ReviewPanel
+            action={review.action}
+            addLabel={reviewAddLabel(review.action)}
+            text={review.text}
+            streaming={streaming}
+            onAdd={acceptReview}
+            onDiscard={() => setReview(null)}
+            onStop={() => abortRef.current?.abort()}
+          />
+        ) : preview ? (
           <div className="prose prose-neutral h-full max-w-none overflow-y-auto">
             {content.trim() ? (
               <ReactMarkdown remarkPlugins={[remarkGfm]}>
@@ -202,7 +267,6 @@ function Editor({
         ) : (
           <textarea
             value={content}
-            readOnly={streaming}
             onChange={(e) => {
               setContent(e.target.value);
               scheduleSave(title, e.target.value);
@@ -214,13 +278,16 @@ function Editor({
       </div>
 
       <div className="mt-3 shrink-0 pb-1">
-        <AiToolbar
-          streaming={streaming}
+        <AskBar
+          disabled={busy}
           error={aiError}
-          onRun={runAction}
-          onStop={() => abortRef.current?.abort()}
+          onAsk={(q) => runAction("ask", q)}
         />
       </div>
+
+      {studying && (
+        <FlashcardStudy cards={cards} onClose={() => setStudying(false)} />
+      )}
     </div>
   );
 }

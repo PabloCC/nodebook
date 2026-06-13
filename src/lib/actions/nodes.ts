@@ -64,6 +64,15 @@ export async function updateNodeContent(id: string, content: string) {
   if (node) revalidatePath(`/workspace/${node.workspaceId}`);
 }
 
+export async function updateNodeFlashcards(id: string, flashcards: string) {
+  const [node] = await db
+    .update(nodes)
+    .set({ flashcards, updatedAt: Date.now() })
+    .where(eq(nodes.id, id))
+    .returning({ workspaceId: nodes.workspaceId });
+  if (node) revalidatePath(`/workspace/${node.workspaceId}`);
+}
+
 export async function moveNode(
   nodeId: string,
   newParentId: string | null,

@@ -21,6 +21,7 @@ vi.mock("@/lib/db", async () => {
       parent_id text REFERENCES nodes(id) ON DELETE CASCADE,
       title text NOT NULL,
       content text NOT NULL DEFAULT '',
+      flashcards text NOT NULL DEFAULT '',
       position integer NOT NULL,
       type text NOT NULL,
       created_at integer NOT NULL,
@@ -34,7 +35,7 @@ vi.mock("@/lib/db", async () => {
 
 import { db } from "@/lib/db";
 import { nodes, workspaces } from "@/lib/db/schema";
-import { moveNode } from "@/lib/actions/nodes";
+import { moveNode, updateNodeFlashcards } from "@/lib/actions/nodes";
 import { eq, asc } from "drizzle-orm";
 
 async function insertFixture() {
@@ -214,5 +215,30 @@ describe("moveNode characterization tests", () => {
     const last = roots[roots.length - 1];
     expect(last.id).toBe("child-b1");
     expect(last.position).toBe(roots.length - 1);
+  });
+});
+
+describe("updateNodeFlashcards", () => {
+  beforeEach(async () => {
+    await db.delete(nodes);
+    await db.delete(workspaces);
+    await insertFixture();
+  });
+
+  it("writes the flashcards column and leaves content untouched", async () => {
+    const deck = "## Flashcards\n\n**Q: What?**\nA: This.";
+    await updateNodeFlashcards("child-a1", deck);
+
+    const node = await getNode("child-a1");
+    expect(node.flashcards).toBe(deck);
+    expect(node.content).toBe("");
+  });
+
+  it("replaces an existing deck rather than appending", async () => {
+    await updateNodeFlashcards("child-a1", "first deck");
+    await updateNodeFlashcards("child-a1", "second deck");
+
+    const node = await getNode("child-a1");
+    expect(node.flashcards).toBe("second deck");
   });
 });

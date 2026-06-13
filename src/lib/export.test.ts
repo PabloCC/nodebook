@@ -18,6 +18,7 @@ function makeNode(
     parentId: null,
     title,
     content,
+    flashcards: "",
     position: 0,
     type,
     createdAt: NOW,

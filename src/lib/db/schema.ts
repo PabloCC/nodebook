@@ -47,6 +47,7 @@ export const nodes = sqliteTable(
     }),
     title: text("title").notNull(),
     content: text("content").notNull().default(""),
+    flashcards: text("flashcards").notNull().default(""),
     position: integer("position").notNull(),
     type: text("type", { enum: ["group", "node"] }).notNull(),
     createdAt: integer("created_at").notNull(),

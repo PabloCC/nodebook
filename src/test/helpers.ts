@@ -10,6 +10,7 @@ export function makeNode(overrides: Partial<OutlineNode> = {}): OutlineNode {
     parentId: null,
     title: `Node ${counter}`,
     content: "",
+    flashcards: "",
     position: 0,
     type: "node",
     createdAt: 1_000,

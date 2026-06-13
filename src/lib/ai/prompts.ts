@@ -76,14 +76,14 @@ ${ctx.content}`;
     case "flashcards":
       return `You are creating flashcards for ${audience}. ${position}
 
-From the node content below${ctx.content.trim() ? "" : hasSources ? " (empty — use the sources for this topic instead)" : " (empty — use your general knowledge of this topic)"}, produce 5-12 question/answer flashcards as a markdown section:
+From the node content below${ctx.content.trim() ? "" : hasSources ? " (empty — use the sources for this topic instead)" : " (empty — use your general knowledge of this topic)"}, produce 5-12 question/answer flashcards as a markdown section in exactly this format:
 
 ## Flashcards
 
 **Q: <question>**
 A: <answer>
 
-Make questions test understanding, not trivia. Return only the flashcards section, no preamble.
+Each card is one **Q: ...** line immediately followed by one A: ... line, with a single blank line between cards. Do not number the cards or add any other preamble. Make questions test understanding, not trivia. Return only the flashcards section.
 
 CONTENT:
 ${ctx.content}`;
