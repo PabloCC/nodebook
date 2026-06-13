@@ -6,6 +6,7 @@ import type { OutlineNode, Source, Workspace } from "@/lib/db/schema";
 import { buildTree } from "@/lib/tree";
 import { OutlineTree } from "./OutlineTree";
 import { NodeEditor } from "./NodeEditor";
+import { SearchBox } from "./SearchBox";
 import { SourcesPanel } from "./SourcesPanel";
 
 export function WorkspaceShell({
@@ -37,7 +38,13 @@ export function WorkspaceShell({
         <span className="rounded-full bg-surface-card px-3 py-0.5 text-[13px] font-medium text-ink">
           {workspace.type === "course" ? "Course" : "Study"}
         </span>
-        <div className="ml-auto">
+        <div className="ml-auto flex items-center gap-4">
+          <a
+            href={`/api/export/${workspace.id}`}
+            className="text-sm font-medium text-muted hover:text-ink"
+          >
+            Export
+          </a>
           <Link
             href="/settings"
             className="text-sm font-medium text-muted hover:text-ink"
@@ -49,6 +56,7 @@ export function WorkspaceShell({
 
       <div className="flex min-h-0 flex-1">
         <aside className="w-72 shrink-0 overflow-x-hidden overflow-y-auto border-r border-hairline bg-surface-soft">
+          <SearchBox workspaceId={workspace.id} onSelect={setSelectedId} />
           <OutlineTree
             workspaceId={workspace.id}
             tree={tree}

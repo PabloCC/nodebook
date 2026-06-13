@@ -3,6 +3,7 @@ import { drizzle, type BetterSQLite3Database } from "drizzle-orm/better-sqlite3"
 import fs from "node:fs";
 import path from "node:path";
 import * as schema from "./schema";
+import { ensureSearchIndex } from "./search-index";
 
 const DATA_DIR = path.join(process.cwd(), "data");
 const DB_PATH = path.join(DATA_DIR, "nodebook.db");
@@ -17,6 +18,7 @@ function createDb() {
   const sqlite = new Database(DB_PATH);
   sqlite.pragma("journal_mode = WAL");
   sqlite.pragma("foreign_keys = ON");
+  ensureSearchIndex(sqlite);
   return drizzle(sqlite, { schema });
 }
 
