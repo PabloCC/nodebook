@@ -5,6 +5,7 @@ import { nodes, sources, workspaces } from "@/lib/db/schema";
 import { WorkspaceShell } from "@/components/workspace/WorkspaceShell";
 import { reconcileStaleSources } from "@/lib/sources";
 import { getNodeSourceMap } from "@/lib/attribution";
+import { getAppSettings, isProviderConfigured } from "@/lib/settings";
 
 export default async function WorkspacePage({
   params,
@@ -21,7 +22,7 @@ export default async function WorkspacePage({
 
   await reconcileStaleSources(id);
 
-  const [allNodes, allSources, nodeSourceMap] = await Promise.all([
+  const [allNodes, allSources, nodeSourceMap, settings] = await Promise.all([
     db
       .select()
       .from(nodes)
@@ -33,6 +34,7 @@ export default async function WorkspacePage({
       .where(eq(sources.workspaceId, id))
       .orderBy(asc(sources.createdAt)),
     getNodeSourceMap(id),
+    getAppSettings(),
   ]);
 
   return (
@@ -41,6 +43,7 @@ export default async function WorkspacePage({
       nodes={allNodes}
       sources={allSources}
       nodeSourceMap={nodeSourceMap}
+      aiConfigured={isProviderConfigured(settings)}
     />
   );
 }

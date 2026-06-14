@@ -20,17 +20,25 @@ const AUTOSAVE_MS = 800;
 
 export function NodeEditor({
   node,
+  nodes,
   workspaceId,
   sources = [],
   informingSourceIds = [],
+  aiConfigured = false,
 }: {
   node: OutlineNode | null;
   nodes: OutlineNode[];
   workspaceId: string;
   sources?: Source[];
   informingSourceIds?: string[];
+  aiConfigured?: boolean;
 }) {
   if (!node) {
+    // Fresh workspace (no nodes yet) gets a getting-started path; otherwise
+    // just prompt to pick a node.
+    if (nodes.length === 0) {
+      return <GettingStarted hasSources={sources.length > 0} />;
+    }
     return (
       <div className="flex h-full items-center justify-center p-8 text-center text-sm text-muted">
         Select a node in the outline to start editing.
@@ -50,7 +58,65 @@ export function NodeEditor({
       workspaceId={workspaceId}
       sources={sources}
       informingSourceIds={informingSourceIds}
+      aiConfigured={aiConfigured}
     />
+  );
+}
+
+function GettingStarted({ hasSources }: { hasSources: boolean }) {
+  const steps = [
+    {
+      n: 1,
+      title: "Add a source",
+      body: "Drop in a PDF, paste a URL, or paste text in the Sources panel on the right.",
+      done: hasSources,
+    },
+    {
+      n: 2,
+      title: "Generate an outline",
+      body: "Let the AI propose a structure from your sources — review it, then accept.",
+      done: false,
+    },
+    {
+      n: 3,
+      title: "Write & study",
+      body: "Expand nodes with AI, then turn them into flashcards and study.",
+      done: false,
+    },
+  ];
+  return (
+    <div className="flex h-full items-center justify-center p-8">
+      <div className="w-full max-w-md">
+        <h2 className="font-display text-2xl text-ink">Get started</h2>
+        <p className="mt-1.5 text-sm text-muted">
+          Build structured knowledge from your sources in three steps.
+        </p>
+        <ol className="mt-6 space-y-3">
+          {steps.map((step) => (
+            <li
+              key={step.n}
+              className="flex gap-3 rounded-xl border border-hairline bg-canvas px-4 py-3.5"
+            >
+              <span
+                className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${
+                  step.done
+                    ? "bg-accent/15 text-accent"
+                    : "bg-surface-card text-muted"
+                }`}
+              >
+                {step.n}
+              </span>
+              <div className="min-w-0">
+                <p className="text-sm font-medium text-ink">{step.title}</p>
+                <p className="mt-0.5 text-sm leading-relaxed text-muted">
+                  {step.body}
+                </p>
+              </div>
+            </li>
+          ))}
+        </ol>
+      </div>
+    </div>
   );
 }
 
@@ -59,11 +125,13 @@ function Editor({
   workspaceId,
   sources,
   informingSourceIds,
+  aiConfigured,
 }: {
   node: OutlineNode;
   workspaceId: string;
   sources: Source[];
   informingSourceIds: string[];
+  aiConfigured: boolean;
 }) {
   const [title, setTitle] = useState(node.title);
   const [content, setContent] = useState(node.content);
@@ -288,6 +356,7 @@ function Editor({
       <div className="mt-3">
         <AiActionBar
           disabled={busy}
+          aiConfigured={aiConfigured}
           onRun={runAction}
           cardCount={cards.length}
           onStudy={() => setStudying(true)}
@@ -330,7 +399,7 @@ function Editor({
 
       <div className="mt-3 shrink-0 pb-1">
         <AskBar
-          disabled={busy}
+          disabled={busy || !aiConfigured}
           error={aiError}
           onAsk={(q) => runAction("ask", q)}
         />

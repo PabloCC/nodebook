@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
+import Link from "next/link";
 import {
   DndContext,
   PointerSensor,
@@ -41,12 +42,14 @@ export function OutlineTree({
   sources,
   selectedId,
   onSelect,
+  aiConfigured,
 }: {
   workspaceId: string;
   tree: TreeNode[];
   sources: Source[];
   selectedId: string | null;
   onSelect: (id: string | null) => void;
+  aiConfigured: boolean;
 }) {
   const [, startTransition] = useTransition();
   const [generating, setGenerating] = useState(false);
@@ -204,6 +207,15 @@ export function OutlineTree({
             {generateError}
           </p>
         )}
+        {!aiConfigured && (
+          <p className="px-1 text-xs text-muted">
+            Connect an AI provider in{" "}
+            <Link href="/settings" className="font-medium text-ink hover:underline">
+              Settings
+            </Link>{" "}
+            to generate outlines.
+          </p>
+        )}
         <div className="flex gap-2">
           <button
             onClick={() => addRoot("node")}
@@ -222,9 +234,13 @@ export function OutlineTree({
         </div>
         <button
           onClick={generate}
-          disabled={generating || !hasReadySources}
+          disabled={generating || !hasReadySources || !aiConfigured}
           title={
-            hasReadySources ? undefined : "Add a source first to generate an outline"
+            !aiConfigured
+              ? "Connect an AI provider in Settings first"
+              : hasReadySources
+                ? undefined
+                : "Add a source first to generate an outline"
           }
           className="btn-primary w-full gap-1.5 px-2 py-1.5 text-xs"
         >

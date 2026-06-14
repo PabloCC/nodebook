@@ -20,10 +20,10 @@ Nodes now record which sources informed them, surfaced as citations.
 - Grounded node actions (expand / rewrite / flashcards / ask) attach their context sources **on accept**; `summarize` attaches none.
 - Source chips under the node title (open the source); the Sources panel highlights what informed the selected node.
 
-### 0b. First-run & reliability 🔜
-- **Provider nudge** — when no API key/provider is configured, show an inline "Connect a provider in Settings" prompt on the AI action bar instead of failing after a request.
-- **Empty-state guidance** — composed empty states for the outline and editor panels: a 3-step nudge ("Add a source → Generate outline → Study").
-- **Source retry** — a "Retry" affordance on `status: "error"` sources, re-running extraction immediately (manual counterpart to the existing stale-extraction recovery on load).
+### 0b. First-run & reliability ✅
+- **Provider nudge** — when no provider/key is configured, the AI action bar and Generate Outline show a "Connect a provider in Settings" prompt and disable the actions, instead of failing after a request.
+- **First-run guidance** — a fresh workspace (no nodes) shows a composed 3-step getting-started in the editor pane ("Add a source → Generate an outline → Write & study").
+- **Source retry** — errored URL sources get a "Retry" button that re-runs extraction. PDF/text aren't re-runnable (no stored bytes) and keep the "delete and add again" path.
 
 ---
 

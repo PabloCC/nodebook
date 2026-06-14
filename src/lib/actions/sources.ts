@@ -92,6 +92,28 @@ export async function addPdfSource(workspaceId: string, formData: FormData) {
   }));
 }
 
+/**
+ * Re-runs extraction for an errored source. Only URL sources are recoverable —
+ * we keep their `originalRef`, whereas PDF bytes and pasted text aren't stored,
+ * so those keep the "delete and add again" path.
+ */
+export async function retrySource(id: string) {
+  const [source] = await db.select().from(sources).where(eq(sources.id, id));
+  if (!source || source.type !== "url" || !source.originalRef) return;
+
+  await db
+    .update(sources)
+    .set({ status: "processing", errorMessage: null })
+    .where(eq(sources.id, id));
+  revalidatePath(`/workspace/${source.workspaceId}`);
+
+  const url = source.originalRef;
+  await finishSource(id, source.workspaceId, async () => {
+    const { title, text } = await extractUrlText(url);
+    return { content: text, title };
+  });
+}
+
 export async function deleteSource(id: string) {
   const [source] = await db
     .delete(sources)

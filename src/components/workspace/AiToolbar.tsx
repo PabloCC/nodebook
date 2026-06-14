@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import type { Icon } from "@phosphor-icons/react";
@@ -13,6 +14,19 @@ import {
   StudyIcon,
   StopIcon,
 } from "@/components/ui/icons";
+
+// Shown wherever an AI action would run but no provider/key is configured —
+// nudges to Settings instead of letting the request fail late.
+export function ProviderNudge() {
+  return (
+    <div className="rounded-lg border border-hairline bg-surface-soft px-3 py-2 text-xs text-muted">
+      Connect an AI provider to use these actions.{" "}
+      <Link href="/settings" className="font-medium text-ink hover:underline">
+        Open Settings →
+      </Link>
+    </div>
+  );
+}
 
 const ACTION_BUTTONS: {
   action: NodeAction;
@@ -28,15 +42,34 @@ const ACTION_BUTTONS: {
 
 export function AiActionBar({
   disabled,
+  aiConfigured,
   onRun,
   cardCount,
   onStudy,
 }: {
   disabled: boolean;
+  aiConfigured: boolean;
   onRun: (action: NodeAction, question?: string) => void;
   cardCount: number;
   onStudy: () => void;
 }) {
+  if (!aiConfigured) {
+    return (
+      <div className="flex flex-wrap items-center gap-2 border-t border-hairline-soft pt-3">
+        <ProviderNudge />
+        {cardCount > 0 && (
+          <button
+            onClick={onStudy}
+            disabled={disabled}
+            className="btn-action btn-action-flashcards"
+          >
+            <StudyIcon className="h-3.5 w-3.5" weight="fill" aria-hidden />
+            Study ({cardCount})
+          </button>
+        )}
+      </div>
+    );
+  }
   return (
     <div className="flex flex-wrap items-center gap-2 border-t border-hairline-soft pt-3">
       {ACTION_BUTTONS.map(({ action, label, Icon, className }) => (

@@ -21,6 +21,22 @@ export const DEFAULT_SETTINGS: AppSettings = {
   ollamaModel: "",
 };
 
+/**
+ * Whether the active provider has enough config to make a request — mirrors
+ * the guards in `getModel`. Lets the UI nudge to Settings before a request
+ * round-trips and fails.
+ */
+export function isProviderConfigured(s: AppSettings): boolean {
+  switch (s.provider) {
+    case "anthropic":
+      return Boolean(s.anthropicApiKey);
+    case "openai":
+      return Boolean(s.openaiApiKey);
+    case "ollama":
+      return Boolean(s.ollamaModel);
+  }
+}
+
 export async function getAppSettings(): Promise<AppSettings> {
   const rows = await db.select().from(settings);
   const stored = Object.fromEntries(rows.map((r) => [r.key, r.value]));

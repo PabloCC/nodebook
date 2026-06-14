@@ -15,11 +15,13 @@ export function WorkspaceShell({
   nodes,
   sources,
   nodeSourceMap,
+  aiConfigured,
 }: {
   workspace: Workspace;
   nodes: OutlineNode[];
   sources: Source[];
   nodeSourceMap: Record<string, string[]>;
+  aiConfigured: boolean;
 }) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const tree = useMemo(() => buildTree(nodes), [nodes]);
@@ -71,6 +73,7 @@ export function WorkspaceShell({
             sources={sources}
             selectedId={selectedId}
             onSelect={setSelectedId}
+            aiConfigured={aiConfigured}
           />
         </aside>
 
@@ -82,6 +85,7 @@ export function WorkspaceShell({
             workspaceId={workspace.id}
             sources={sources}
             informingSourceIds={informingSourceIds}
+            aiConfigured={aiConfigured}
           />
         </main>
 

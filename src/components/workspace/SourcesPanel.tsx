@@ -7,9 +7,10 @@ import {
   addTextSource,
   addUrlSource,
   deleteSource,
+  retrySource,
 } from "@/lib/actions/sources";
 import { ConfirmButton } from "@/components/ui/ConfirmDialog";
-import { AddIcon, CloseIcon } from "@/components/ui/icons";
+import { AddIcon, CloseIcon, RewriteActionIcon } from "@/components/ui/icons";
 import {
   SourceTypeIcon,
   SourceViewerDialog,
@@ -93,10 +94,30 @@ export function SourcesPanel({
                     <CloseIcon className="h-3.5 w-3.5" weight="bold" />
                   </ConfirmButton>
                 </div>
-                {source.status === "error" && source.errorMessage && (
-                  <p className="mt-1 pl-6 text-xs text-error">
-                    {source.errorMessage}
-                  </p>
+                {source.status === "error" && (
+                  <div className="mt-1 pl-6">
+                    {source.errorMessage && (
+                      <p className="text-xs text-error">
+                        {source.errorMessage}
+                      </p>
+                    )}
+                    {source.type === "url" && (
+                      <button
+                        onClick={() =>
+                          startTransition(() => retrySource(source.id))
+                        }
+                        disabled={pending}
+                        className="mt-1 inline-flex items-center gap-1 text-xs font-medium text-muted transition-colors hover:text-ink disabled:opacity-50"
+                      >
+                        <RewriteActionIcon
+                          className="h-3 w-3"
+                          weight="bold"
+                          aria-hidden
+                        />
+                        Retry
+                      </button>
+                    )}
+                  </div>
                 )}
               </li>
             ))}
