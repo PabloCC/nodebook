@@ -23,7 +23,7 @@ export async function POST(request: Request) {
   }
 
   const sourceContext = await buildSourceContext(workspaceId);
-  if (!sourceContext) {
+  if (!sourceContext.text) {
     return Response.json(
       { error: "Add at least one processed source before generating an outline." },
       { status: 400 }
@@ -35,7 +35,7 @@ export async function POST(request: Request) {
     const { object } = await generateObject({
       model,
       schema: outlineProposalSchema,
-      prompt: outlinePrompt(workspace, sourceContext),
+      prompt: outlinePrompt(workspace, sourceContext.text),
     });
     return Response.json({ proposal: object });
   } catch (err) {

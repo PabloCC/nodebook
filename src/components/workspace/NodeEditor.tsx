@@ -3,9 +3,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import type { OutlineNode } from "@/lib/db/schema";
+import type { OutlineNode, Source } from "@/lib/db/schema";
 import type { NodeAction } from "@/lib/ai/prompts";
 import {
+  attachNodeSources,
   renameNode,
   updateNodeContent,
   updateNodeFlashcards,
@@ -13,16 +14,21 @@ import {
 import { parseFlashcards } from "@/lib/flashcards";
 import { AiActionBar, AskBar, ReviewPanel } from "./AiToolbar";
 import { FlashcardStudy } from "./FlashcardStudy";
+import { SourceTypeIcon, SourceViewerDialog } from "./SourceViewerDialog";
 
 const AUTOSAVE_MS = 800;
 
 export function NodeEditor({
   node,
   workspaceId,
+  sources = [],
+  informingSourceIds = [],
 }: {
   node: OutlineNode | null;
   nodes: OutlineNode[];
   workspaceId: string;
+  sources?: Source[];
+  informingSourceIds?: string[];
 }) {
   if (!node) {
     return (
@@ -38,15 +44,26 @@ export function NodeEditor({
       </div>
     );
   }
-  return <Editor node={node} workspaceId={workspaceId} />;
+  return (
+    <Editor
+      node={node}
+      workspaceId={workspaceId}
+      sources={sources}
+      informingSourceIds={informingSourceIds}
+    />
+  );
 }
 
 function Editor({
   node,
   workspaceId,
+  sources,
+  informingSourceIds,
 }: {
   node: OutlineNode;
   workspaceId: string;
+  sources: Source[];
+  informingSourceIds: string[];
 }) {
   const [title, setTitle] = useState(node.title);
   const [content, setContent] = useState(node.content);
@@ -58,11 +75,16 @@ function Editor({
   const [aiError, setAiError] = useState<string | null>(null);
   const [studying, setStudying] = useState(false);
   const [flashcards, setFlashcards] = useState(node.flashcards ?? "");
+  const [viewingSource, setViewingSource] = useState<Source | null>(null);
   const [review, setReview] = useState<{
     action: NodeAction;
     text: string;
+    sourceIds: string[];
   } | null>(null);
   const cards = useMemo(() => parseFlashcards(flashcards), [flashcards]);
+  const informingSources = sources.filter((s) =>
+    informingSourceIds.includes(s.id)
+  );
   const busy = streaming || review !== null;
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const latest = useRef({ title: node.title, content: node.content });
@@ -120,7 +142,7 @@ function Editor({
     setStreaming(true);
     // Stream into the review buffer — nothing is written to the node until
     // the user accepts. Content/flashcards stay untouched here.
-    setReview({ action, text: "" });
+    setReview({ action, text: "", sourceIds: [] });
     try {
       // Save first so the server-side context sees the latest content.
       await persist(title, content);
@@ -140,13 +162,18 @@ function Editor({
         return;
       }
 
+      // Sources that grounded this response — attached to the node on accept.
+      const sourceIds = (res.headers.get("X-Source-Ids") ?? "")
+        .split(",")
+        .filter(Boolean);
+
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
         acc += decoder.decode(value, { stream: true });
-        setReview({ action, text: acc });
+        setReview({ action, text: acc, sourceIds });
       }
     } catch (err) {
       const aborted = err instanceof DOMException && err.name === "AbortError";
@@ -163,7 +190,7 @@ function Editor({
 
   const acceptReview = () => {
     if (!review) return;
-    const { action, text } = review;
+    const { action, text, sourceIds } = review;
     if (action === "flashcards") {
       setFlashcards(text);
       void updateNodeFlashcards(node.id, text);
@@ -176,6 +203,11 @@ function Editor({
         : text;
       setContent(next);
       void persist(title, next);
+    }
+    // Record the sources that grounded the accepted content (no-op for
+    // summarize, which never receives sources).
+    if (sourceIds.length > 0) {
+      void attachNodeSources(node.id, sourceIds);
     }
     setReview(null);
   };
@@ -234,6 +266,25 @@ function Editor({
         </div>
       </div>
 
+      {informingSources.length > 0 && (
+        <div className="mt-2 flex flex-wrap items-center gap-1.5">
+          <span className="text-[11px] font-medium text-muted-soft">
+            Sources
+          </span>
+          {informingSources.map((source) => (
+            <button
+              key={source.id}
+              onClick={() => setViewingSource(source)}
+              title={`Informed by "${source.title}"`}
+              className="inline-flex max-w-44 items-center gap-1 rounded-md bg-accent/10 px-2 py-0.5 text-xs text-accent transition-colors hover:bg-accent/20"
+            >
+              <SourceTypeIcon type={source.type} className="h-3 w-3 shrink-0" />
+              <span className="truncate">{source.title}</span>
+            </button>
+          ))}
+        </div>
+      )}
+
       <div className="mt-3">
         <AiActionBar
           disabled={busy}
@@ -288,6 +339,11 @@ function Editor({
       {studying && (
         <FlashcardStudy cards={cards} onClose={() => setStudying(false)} />
       )}
+
+      <SourceViewerDialog
+        source={viewingSource}
+        onClose={() => setViewingSource(null)}
+      />
     </div>
   );
 }

@@ -80,6 +80,8 @@ Canonical schema lives in `src/lib/db/schema.ts`.
 
 **Deferred:** desktop app (Tauri/Electron), marketplace/selling, cloud SaaS, multi-user workspaces.
 
+**Next steps:** the post-MVP direction (trust & grounding, study loop, publishing) is tracked in [ROADMAP.md](ROADMAP.md).
+
 ## Project Conventions
 
 - License MIT; product name **MyNodebook**, repo `nodebook`.

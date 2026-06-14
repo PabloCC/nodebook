@@ -3,6 +3,7 @@ import {
   text,
   integer,
   index,
+  primaryKey,
   type AnySQLiteColumn,
 } from "drizzle-orm/sqlite-core";
 
@@ -59,6 +60,25 @@ export const nodes = sqliteTable(
   ]
 );
 
+// Which sources informed a node — populated when an outline is generated and
+// when grounded AI actions run. Both sides cascade so links never orphan.
+export const nodeSources = sqliteTable(
+  "node_sources",
+  {
+    nodeId: text("node_id")
+      .notNull()
+      .references(() => nodes.id, { onDelete: "cascade" }),
+    sourceId: text("source_id")
+      .notNull()
+      .references(() => sources.id, { onDelete: "cascade" }),
+  },
+  (table) => [
+    primaryKey({ columns: [table.nodeId, table.sourceId] }),
+    index("node_sources_node_idx").on(table.nodeId),
+    index("node_sources_source_idx").on(table.sourceId),
+  ]
+);
+
 export const settings = sqliteTable("settings", {
   key: text("key").primaryKey(),
   value: text("value").notNull(),
@@ -67,3 +87,4 @@ export const settings = sqliteTable("settings", {
 export type Workspace = typeof workspaces.$inferSelect;
 export type Source = typeof sources.$inferSelect;
 export type OutlineNode = typeof nodes.$inferSelect;
+export type NodeSource = typeof nodeSources.$inferSelect;

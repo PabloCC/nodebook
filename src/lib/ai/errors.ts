@@ -6,7 +6,11 @@ export function friendlyAiError(err: unknown): string {
   if (/ECONNREFUSED|fetch failed|Failed to fetch/i.test(message + causeMessage)) {
     return "Could not reach the AI provider. If you are using Ollama, make sure it is running.";
   }
-  if (/401|unauthorized|invalid.*key|authentication/i.test(message)) {
+  if (
+    /\b401\b|unauthorized|incorrect api key|invalid[\s_-]?api[\s_-]?key|x-api-key|authentication[_\s]?error/i.test(
+      message
+    )
+  ) {
     return "The AI provider rejected your API key. Check it in Settings.";
   }
   if (/404|not.*found.*model|model.*not/i.test(message)) {

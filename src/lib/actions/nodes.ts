@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/lib/db";
-import { nodes } from "@/lib/db/schema";
+import { nodes, nodeSources, sources } from "@/lib/db/schema";
 import { and, eq, isNull, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import {
@@ -170,6 +170,17 @@ export async function applyOutline(
   let rootPosition = (max ?? -1) + 1;
   const now = Date.now();
 
+  // The model cites source ids in sourceRefs — keep only ones that really
+  // belong to this workspace so a hallucinated id can't violate the FK.
+  const workspaceSourceIds = new Set(
+    (
+      await db
+        .select({ id: sources.id })
+        .from(sources)
+        .where(eq(sources.workspaceId, workspaceId))
+    ).map((s) => s.id)
+  );
+
   db.transaction((tx) => {
     for (const group of parsed.groups) {
       const groupId = crypto.randomUUID();
@@ -187,9 +198,10 @@ export async function applyOutline(
         })
         .run();
       group.nodes.forEach((node, index) => {
+        const nodeId = crypto.randomUUID();
         tx.insert(nodes)
           .values({
-            id: crypto.randomUUID(),
+            id: nodeId,
             workspaceId,
             parentId: groupId,
             title: node.title,
@@ -200,11 +212,50 @@ export async function applyOutline(
             updatedAt: now,
           })
           .run();
+        const refs = [...new Set(node.sourceRefs ?? [])].filter((id) =>
+          workspaceSourceIds.has(id)
+        );
+        for (const sourceId of refs) {
+          tx.insert(nodeSources).values({ nodeId, sourceId }).run();
+        }
       });
     }
   });
 
   revalidatePath(`/workspace/${workspaceId}`);
+}
+
+/**
+ * Records which sources informed a node. Additive and idempotent — links
+ * accumulate as grounded AI actions are accepted. Source ids are validated
+ * against the node's workspace so a stale id can't violate the FK.
+ */
+export async function attachNodeSources(nodeId: string, sourceIds: string[]) {
+  const unique = [...new Set(sourceIds)].filter(Boolean);
+  if (unique.length === 0) return;
+
+  const [node] = await db
+    .select({ workspaceId: nodes.workspaceId })
+    .from(nodes)
+    .where(eq(nodes.id, nodeId));
+  if (!node) return;
+
+  const valid = new Set(
+    (
+      await db
+        .select({ id: sources.id })
+        .from(sources)
+        .where(eq(sources.workspaceId, node.workspaceId))
+    ).map((s) => s.id)
+  );
+
+  const rows = unique
+    .filter((id) => valid.has(id))
+    .map((sourceId) => ({ nodeId, sourceId }));
+  if (rows.length === 0) return;
+
+  await db.insert(nodeSources).values(rows).onConflictDoNothing();
+  revalidatePath(`/workspace/${node.workspaceId}`);
 }
 
 export async function deleteNode(id: string) {

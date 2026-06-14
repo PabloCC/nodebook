@@ -50,9 +50,11 @@ export async function POST(request: Request) {
     // Summarize only condenses what's already in the node; everything else
     // is grounded in the workspace sources (when there are any).
     const sourceContext =
-      action === "summarize" ? "" : await buildSourceContext(workspaceId);
-    const system = sourceContext
-      ? `Reference material for this workspace:\n\n${sourceContext}`
+      action === "summarize"
+        ? { text: "", sourceIds: [] }
+        : await buildSourceContext(workspaceId);
+    const system = sourceContext.text
+      ? `Reference material for this workspace:\n\n${sourceContext.text}`
       : undefined;
 
     const result = streamText({
@@ -63,11 +65,15 @@ export async function POST(request: Request) {
         workspace,
         nodeCtx,
         question,
-        Boolean(sourceContext)
+        Boolean(sourceContext.text)
       ),
       abortSignal: request.signal,
     });
-    return result.toTextStreamResponse();
+    // Surface which sources grounded this response so the client can attribute
+    // the node on accept (header, since the body is a plain text stream).
+    return result.toTextStreamResponse({
+      headers: { "X-Source-Ids": sourceContext.sourceIds.join(",") },
+    });
   } catch (err) {
     if (err instanceof AiConfigError) {
       return Response.json({ error: err.message }, { status: 400 });

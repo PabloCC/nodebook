@@ -21,7 +21,7 @@ export function outlinePrompt(workspace: Workspace, sourceContext: string) {
       : "a personal study plan";
   return `You are a curriculum designer. The user is building ${audience} called "${workspace.name}".
 
-Based on the following sources, design a structured outline: groups (modules or topic sections) containing nodes (lessons or topics). Each node needs a title and a one-or-two sentence description of what it covers. Cover the material in the sources thoroughly and in a logical learning order. Aim for 3-8 groups with 2-6 nodes each, scaled to the amount of material.
+Based on the following sources, design a structured outline: groups (modules or topic sections) containing nodes (lessons or topics). Each node needs a title and a one-or-two sentence description of what it covers. For each node, set sourceRefs to the id values of the sources (from the SOURCES list below) that the node draws on. Cover the material in the sources thoroughly and in a logical learning order. Aim for 3-8 groups with 2-6 nodes each, scaled to the amount of material.
 
 SOURCES:
 ${sourceContext}`;

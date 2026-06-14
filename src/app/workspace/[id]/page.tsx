@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { nodes, sources, workspaces } from "@/lib/db/schema";
 import { WorkspaceShell } from "@/components/workspace/WorkspaceShell";
 import { reconcileStaleSources } from "@/lib/sources";
+import { getNodeSourceMap } from "@/lib/attribution";
 
 export default async function WorkspacePage({
   params,
@@ -20,7 +21,7 @@ export default async function WorkspacePage({
 
   await reconcileStaleSources(id);
 
-  const [allNodes, allSources] = await Promise.all([
+  const [allNodes, allSources, nodeSourceMap] = await Promise.all([
     db
       .select()
       .from(nodes)
@@ -31,6 +32,7 @@ export default async function WorkspacePage({
       .from(sources)
       .where(eq(sources.workspaceId, id))
       .orderBy(asc(sources.createdAt)),
+    getNodeSourceMap(id),
   ]);
 
   return (
@@ -38,6 +40,7 @@ export default async function WorkspacePage({
       workspace={workspace}
       nodes={allNodes}
       sources={allSources}
+      nodeSourceMap={nodeSourceMap}
     />
   );
 }

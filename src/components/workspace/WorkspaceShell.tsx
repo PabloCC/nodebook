@@ -14,14 +14,19 @@ export function WorkspaceShell({
   workspace,
   nodes,
   sources,
+  nodeSourceMap,
 }: {
   workspace: Workspace;
   nodes: OutlineNode[];
   sources: Source[];
+  nodeSourceMap: Record<string, string[]>;
 }) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const tree = useMemo(() => buildTree(nodes), [nodes]);
   const selectedNode = nodes.find((n) => n.id === selectedId) ?? null;
+  const informingSourceIds = selectedId
+    ? (nodeSourceMap[selectedId] ?? [])
+    : [];
 
   return (
     <div className="flex h-screen flex-col">
@@ -75,11 +80,17 @@ export function WorkspaceShell({
             node={selectedNode}
             nodes={nodes}
             workspaceId={workspace.id}
+            sources={sources}
+            informingSourceIds={informingSourceIds}
           />
         </main>
 
         <aside className="w-72 shrink-0 overflow-y-auto border-l border-hairline bg-surface-soft">
-          <SourcesPanel workspaceId={workspace.id} sources={sources} />
+          <SourcesPanel
+            workspaceId={workspace.id}
+            sources={sources}
+            informingSourceIds={informingSourceIds}
+          />
         </aside>
       </div>
     </div>

@@ -13,6 +13,10 @@ Unlike chat-based tools, everything the AI generates is anchored to an outline y
 - **Drag-and-drop** — reorder nodes and move them between groups in the outline.
 - **Bring your own AI** — OpenAI or Anthropic API key, or fully local via [Ollama](https://ollama.com) (auto-detected).
 
+## Roadmap
+
+Where the product is headed — trust & grounding, a real study loop, and publishing — is tracked in [ROADMAP.md](ROADMAP.md).
+
 ## Getting started
 
 ```bash
