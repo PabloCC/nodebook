@@ -38,13 +38,13 @@ Turn one-shot flashcards into retention. Builds on Phase 0's per-node grounding.
 
 ---
 
-## Phase 2 — Creator value: authoring & publishing ⬜
+## Phase 2 — Creator value: authoring & publishing ✅
 
 Make output worth sharing or selling, and close the portability gap.
 
-- **Richer export** — include flashcards, add a table of contents, and a single self-contained HTML (and/or PDF) export alongside the markdown folder.
-- **Round-trip import** — re-import an exported workspace (markdown folder / zip) to restore outline + content; makes workspaces portable and backup-able.
-- **Read-only shareable view** — a static, self-contained published view of a workspace (with citations from Phase 0), suitable for handing to students.
+- **Richer export** ✅ — the markdown zip now includes each node's flashcards and a root `README.md` table of contents.
+- **Self-contained HTML export** ✅ — `Export → Web page (.html)` renders the whole workspace into one offline, styled file (TOC, content, citations, flashcards). Doubles as the read-only shareable view; print to PDF from the browser. (True server-side PDF stays out of scope — no headless-renderer dep.)
+- **Round-trip import** ✅ — "Import" on the home page recreates a workspace from an exported markdown zip (outline, content, flashcards), keyed off the same file conventions the export produces.
 
 ---
 

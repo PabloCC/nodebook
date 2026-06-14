@@ -1,6 +1,10 @@
 import { describe, it, expect } from "vitest";
 import type { TreeNode } from "@/lib/tree";
-import { slugifyTitle, workspaceExportFiles } from "@/lib/export";
+import {
+  slugifyTitle,
+  workspaceExportFiles,
+  workspaceTableOfContents,
+} from "@/lib/export";
 
 const NOW = Date.now();
 let counter = 0;
@@ -9,7 +13,8 @@ function makeNode(
   title: string,
   type: "group" | "node",
   children: TreeNode[] = [],
-  content = ""
+  content = "",
+  flashcards = ""
 ): TreeNode {
   counter += 1;
   return {
@@ -18,7 +23,7 @@ function makeNode(
     parentId: null,
     title,
     content,
-    flashcards: "",
+    flashcards,
     position: 0,
     type,
     createdAt: NOW,
@@ -89,6 +94,49 @@ describe("workspaceExportFiles", () => {
   it("exports empty-content nodes with just the heading", () => {
     const tree = [makeNode("Stub", "node")];
     expect(workspaceExportFiles(tree)[0].content).toBe("# Stub\n");
+  });
+
+  it("appends a node's flashcards under a single ## Flashcards heading", () => {
+    const withHeading = makeNode(
+      "A",
+      "node",
+      [],
+      "Body.",
+      "## Flashcards\n\n**Q: q1**\nA: a1"
+    );
+    expect(workspaceExportFiles([withHeading])[0].content).toBe(
+      "# A\n\nBody.\n\n## Flashcards\n\n**Q: q1**\nA: a1\n"
+    );
+
+    // Stored text without a heading gets one added (no duplication).
+    const noHeading = makeNode("B", "node", [], "Body.", "**Q: q1**\nA: a1");
+    expect(workspaceExportFiles([noHeading])[0].content).toBe(
+      "# B\n\nBody.\n\n## Flashcards\n\n**Q: q1**\nA: a1\n"
+    );
+  });
+});
+
+describe("workspaceTableOfContents", () => {
+  it("renders an indented outline linking nodes to their files", () => {
+    const tree = [
+      makeNode("Getting Started", "group", [
+        makeNode("Installing Python", "node"),
+        makeNode("Hello World", "node"),
+      ]),
+      makeNode("Closing Notes", "node"),
+    ];
+
+    expect(workspaceTableOfContents(tree, "My Course")).toBe(
+      [
+        "# My Course",
+        "",
+        "- **Getting Started**",
+        "  - [Installing Python](01-getting-started/01-installing-python.md)",
+        "  - [Hello World](01-getting-started/02-hello-world.md)",
+        "- [Closing Notes](02-closing-notes.md)",
+        "",
+      ].join("\n")
+    );
   });
 
   it("skips empty groups and nests folders for groups inside groups", () => {

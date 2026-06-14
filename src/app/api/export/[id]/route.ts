@@ -1,15 +1,22 @@
 import JSZip from "jszip";
 import { asc, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { nodes, workspaces } from "@/lib/db/schema";
+import { nodes, sources, workspaces } from "@/lib/db/schema";
 import { buildTree } from "@/lib/tree";
-import { slugifyTitle, workspaceExportFiles } from "@/lib/export";
+import {
+  slugifyTitle,
+  workspaceExportFiles,
+  workspaceTableOfContents,
+} from "@/lib/export";
+import { renderWorkspaceHtml } from "@/lib/html-export";
+import { getNodeSourceMap } from "@/lib/attribution";
 
 export async function GET(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
+  const format = new URL(request.url).searchParams.get("format");
 
   const [workspace] = await db
     .select()
@@ -24,9 +31,33 @@ export async function GET(
     .from(nodes)
     .where(eq(nodes.workspaceId, id))
     .orderBy(asc(nodes.position));
+  const tree = buildTree(allNodes);
+  const filename = slugifyTitle(workspace.name);
 
+  // Self-contained HTML — one shareable, printable file.
+  if (format === "html") {
+    const [allSources, nodeSourceMap] = await Promise.all([
+      db.select().from(sources).where(eq(sources.workspaceId, id)),
+      getNodeSourceMap(id),
+    ]);
+    const html = renderWorkspaceHtml({
+      workspace,
+      tree,
+      sources: allSources,
+      nodeSourceMap,
+    });
+    return new Response(html, {
+      headers: {
+        "Content-Type": "text/html; charset=utf-8",
+        "Content-Disposition": `attachment; filename="${filename}.html"`,
+      },
+    });
+  }
+
+  // Default: markdown folder zip.
   const zip = new JSZip();
-  for (const file of workspaceExportFiles(buildTree(allNodes))) {
+  zip.file("README.md", workspaceTableOfContents(tree, workspace.name));
+  for (const file of workspaceExportFiles(tree)) {
     zip.file(file.path, file.content);
   }
   const archive = await zip.generateAsync({ type: "arraybuffer" });
@@ -34,7 +65,7 @@ export async function GET(
   return new Response(archive, {
     headers: {
       "Content-Type": "application/zip",
-      "Content-Disposition": `attachment; filename="${slugifyTitle(workspace.name)}.zip"`,
+      "Content-Disposition": `attachment; filename="${filename}.zip"`,
     },
   });
 }

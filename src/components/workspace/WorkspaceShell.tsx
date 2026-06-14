@@ -79,13 +79,26 @@ export function WorkspaceShell({
               Study due ({totalDue})
             </button>
           )}
-          <a
-            href={`/api/export/${workspace.id}`}
-            className="flex items-center gap-1.5 text-sm font-medium text-muted transition-colors hover:text-ink"
-          >
-            <ExportIcon className="h-4 w-4" weight="bold" />
-            Export
-          </a>
+          <details className="group relative">
+            <summary className="flex cursor-pointer list-none items-center gap-1.5 text-sm font-medium text-muted transition-colors hover:text-ink [&::-webkit-details-marker]:hidden">
+              <ExportIcon className="h-4 w-4" weight="bold" />
+              Export
+            </summary>
+            <div className="absolute right-0 z-20 mt-2 w-44 overflow-hidden rounded-lg border border-hairline bg-canvas py-1 shadow-[0_8px_30px_rgba(0,0,0,0.12)]">
+              <a
+                href={`/api/export/${workspace.id}`}
+                className="block px-3 py-2 text-sm text-ink transition-colors hover:bg-surface-soft"
+              >
+                Markdown (.zip)
+              </a>
+              <a
+                href={`/api/export/${workspace.id}?format=html`}
+                className="block px-3 py-2 text-sm text-ink transition-colors hover:bg-surface-soft"
+              >
+                Web page (.html)
+              </a>
+            </div>
+          </details>
           <Link
             href="/settings"
             className="text-sm font-medium text-muted transition-colors hover:text-ink"

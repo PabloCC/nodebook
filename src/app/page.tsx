@@ -7,6 +7,7 @@ import { db } from "@/lib/db";
 import { workspaces } from "@/lib/db/schema";
 import { createWorkspace, deleteWorkspace } from "@/lib/actions/workspaces";
 import { ConfirmButton } from "@/components/ui/ConfirmDialog";
+import { ImportButton } from "@/components/ui/ImportButton";
 
 export default async function Home() {
   const all = await db
@@ -32,7 +33,10 @@ export default async function Home() {
       </header>
 
       <section className="mt-12">
-        <h2 className="badge text-muted">New workspace</h2>
+        <div className="flex items-center justify-between gap-3">
+          <h2 className="badge text-muted">New workspace</h2>
+          <ImportButton />
+        </div>
         <form
           action={createWorkspace}
           className="mt-3 flex flex-wrap items-center gap-2"
