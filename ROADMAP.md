@@ -27,14 +27,14 @@ Nodes now record which sources informed them, surfaced as citations.
 
 ---
 
-## Phase 1 — Student depth: a real learning loop ⬜
+## Phase 1 — Student depth: a real learning loop 🟡
 
 Turn one-shot flashcards into retention. Builds on Phase 0's per-node grounding.
 
-- **Persistent spaced repetition** — store per-card review state (ease, interval, due, last reviewed); a lightweight SM-2. Study records grades instead of discarding session state.
-- **"Study what's due" across the workspace** — pull due cards from all nodes, not just the open one.
-- **Progress signals** — per-node / workspace mastery indicators (due / learning / known) in the outline.
-- *(Stretch)* **Quiz mode** — AI-generated multiple-choice from sources, reusing the grounded context.
+- **Persistent spaced repetition** ✅ — per-card review state (ease/interval/due) with a lightweight SM-2 scheduler; study grades cards Again/Good/Easy and persists. Review state is keyed by a hash of the question, so it survives deck reorder/regeneration.
+- **"Study what's due" across the workspace** ✅ — a "Study due (N)" button in the header opens a due-first session pulling cards from all nodes.
+- **Progress signals** ✅ — per-node due-count badges in the outline and the workspace total in the header.
+- *(Stretch)* **Quiz mode** ⬜ — AI-generated multiple-choice from sources, reusing the grounded context. Deferred.
 
 ---
 

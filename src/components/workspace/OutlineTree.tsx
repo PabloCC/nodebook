@@ -43,6 +43,7 @@ export function OutlineTree({
   selectedId,
   onSelect,
   aiConfigured,
+  dueByNode,
 }: {
   workspaceId: string;
   tree: TreeNode[];
@@ -50,6 +51,7 @@ export function OutlineTree({
   selectedId: string | null;
   onSelect: (id: string | null) => void;
   aiConfigured: boolean;
+  dueByNode: Record<string, number>;
 }) {
   const [, startTransition] = useTransition();
   const [generating, setGenerating] = useState(false);
@@ -193,6 +195,7 @@ export function OutlineTree({
                     selectedId={selectedId}
                     onSelect={onSelect}
                     dropGroupId={dropGroupId}
+                    dueByNode={dueByNode}
                   />
                 ))}
               </ul>
@@ -267,6 +270,7 @@ function TreeItem({
   selectedId,
   onSelect,
   dropGroupId,
+  dueByNode,
 }: {
   node: TreeNode;
   depth: number;
@@ -274,7 +278,9 @@ function TreeItem({
   selectedId: string | null;
   onSelect: (id: string | null) => void;
   dropGroupId: string | null;
+  dueByNode: Record<string, number>;
 }) {
+  const due = dueByNode[node.id] ?? 0;
   const [collapsed, setCollapsed] = useState(false);
   const [editing, setEditing] = useState(false);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
@@ -360,6 +366,15 @@ function TreeItem({
           </button>
         )}
 
+        {due > 0 && (
+          <span
+            title={`${due} card${due === 1 ? "" : "s"} due`}
+            className="inline-flex shrink-0 items-center rounded-full bg-accent/15 px-1.5 text-[10px] font-semibold tabular-nums text-accent group-hover:hidden"
+          >
+            {due}
+          </span>
+        )}
+
         <span className="hidden shrink-0 items-center gap-0.5 group-hover:flex">
           {isGroup && (
             <button
@@ -424,6 +439,7 @@ function TreeItem({
                 selectedId={selectedId}
                 onSelect={onSelect}
                 dropGroupId={dropGroupId}
+                dueByNode={dueByNode}
               />
             ))}
           </ul>

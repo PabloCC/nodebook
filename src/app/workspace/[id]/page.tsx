@@ -5,6 +5,7 @@ import { nodes, sources, workspaces } from "@/lib/db/schema";
 import { WorkspaceShell } from "@/components/workspace/WorkspaceShell";
 import { reconcileStaleSources } from "@/lib/sources";
 import { getNodeSourceMap } from "@/lib/attribution";
+import { getWorkspaceReviews } from "@/lib/reviews";
 import { getAppSettings, isProviderConfigured } from "@/lib/settings";
 
 export default async function WorkspacePage({
@@ -22,20 +23,22 @@ export default async function WorkspacePage({
 
   await reconcileStaleSources(id);
 
-  const [allNodes, allSources, nodeSourceMap, settings] = await Promise.all([
-    db
-      .select()
-      .from(nodes)
-      .where(eq(nodes.workspaceId, id))
-      .orderBy(asc(nodes.position)),
-    db
-      .select()
-      .from(sources)
-      .where(eq(sources.workspaceId, id))
-      .orderBy(asc(sources.createdAt)),
-    getNodeSourceMap(id),
-    getAppSettings(),
-  ]);
+  const [allNodes, allSources, nodeSourceMap, reviewMap, settings] =
+    await Promise.all([
+      db
+        .select()
+        .from(nodes)
+        .where(eq(nodes.workspaceId, id))
+        .orderBy(asc(nodes.position)),
+      db
+        .select()
+        .from(sources)
+        .where(eq(sources.workspaceId, id))
+        .orderBy(asc(sources.createdAt)),
+      getNodeSourceMap(id),
+      getWorkspaceReviews(id),
+      getAppSettings(),
+    ]);
 
   return (
     <WorkspaceShell
@@ -43,6 +46,7 @@ export default async function WorkspacePage({
       nodes={allNodes}
       sources={allSources}
       nodeSourceMap={nodeSourceMap}
+      reviewMap={reviewMap}
       aiConfigured={isProviderConfigured(settings)}
     />
   );

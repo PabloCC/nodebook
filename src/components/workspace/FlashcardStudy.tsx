@@ -1,54 +1,60 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import type { Flashcard } from "@/lib/flashcards";
+import type { Grade } from "@/lib/srs";
+import type { StudyCard } from "@/lib/study-deck";
 
-function shuffled(indices: number[]): number[] {
-  const out = [...indices];
-  for (let i = out.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [out[i], out[j]] = [out[j], out[i]];
-  }
-  return out;
-}
+const GRADE_BUTTONS: { grade: Grade; label: string; className: string }[] = [
+  { grade: "again", label: "Again", className: "btn-utility" },
+  { grade: "good", label: "Good", className: "btn-secondary" },
+  { grade: "easy", label: "Easy", className: "btn-primary" },
+];
 
 export function FlashcardStudy({
   cards,
+  onGrade,
   onClose,
 }: {
-  cards: Flashcard[];
+  cards: StudyCard[];
+  onGrade: (nodeId: string, cardKey: string, grade: Grade) => void;
   onClose: () => void;
 }) {
-  const allIndices = useMemo(() => cards.map((_, i) => i), [cards]);
-  const [queue, setQueue] = useState<number[]>(() => shuffled(allIndices));
+  // The queue is mutable: an "again" card is re-enqueued to resurface this
+  // session. `total` is the count of distinct cards for the progress bar.
+  const [queue, setQueue] = useState<StudyCard[]>(cards);
   const [position, setPosition] = useState(0);
   const [flipped, setFlipped] = useState(false);
-  const [missed, setMissed] = useState<Set<number>>(new Set());
+  const [graded, setGraded] = useState(0);
+  const [again, setAgain] = useState(0);
 
   const done = position >= queue.length;
-  const card = done ? null : cards[queue[position]];
+  const card = done ? null : queue[position];
 
   const flip = useCallback(() => setFlipped(true), []);
 
-  const advance = (didMiss: boolean) => {
-    setMissed((prev) => {
-      if (!didMiss) return prev;
-      const next = new Set(prev);
-      next.add(queue[position]);
-      return next;
-    });
-    setFlipped(false);
-    setPosition((p) => p + 1);
-  };
-
-  const restart = (indices: number[]) => {
-    setQueue(shuffled(indices));
-    setPosition(0);
-    setFlipped(false);
-    setMissed(new Set());
-  };
+  const grade = useCallback(
+    (g: Grade) => {
+      const current = queue[position];
+      if (!current) return;
+      onGrade(current.nodeId, current.cardKey, g);
+      setGraded((n) => n + 1);
+      if (g === "again") {
+        setAgain((n) => n + 1);
+        // Resurface a few cards later (or at the end of a short queue).
+        setQueue((q) => {
+          const next = [...q];
+          const insertAt = Math.min(q.length, position + 3);
+          next.splice(insertAt, 0, current);
+          return next;
+        });
+      }
+      setFlipped(false);
+      setPosition((p) => p + 1);
+    },
+    [onGrade, position, queue]
+  );
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -57,11 +63,14 @@ export function FlashcardStudy({
       } else if ((e.key === " " || e.key === "Enter") && !done && !flipped) {
         e.preventDefault();
         flip();
+      } else if (flipped && !done && (e.key === "1" || e.key === "2" || e.key === "3")) {
+        e.preventDefault();
+        grade(GRADE_BUTTONS[Number(e.key) - 1].grade);
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [done, flipped, flip, onClose]);
+  }, [done, flipped, flip, grade, onClose]);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-6">
@@ -87,27 +96,14 @@ export function FlashcardStudy({
         {done ? (
           <div className="mt-6 flex flex-col items-center gap-5 py-6 text-center">
             <p className="text-sm text-muted">
-              Reviewed {queue.length} {queue.length === 1 ? "card" : "cards"}.
-              {missed.size > 0
-                ? ` ${missed.size} marked for review.`
-                : " All marked as known."}
+              Reviewed {graded} {graded === 1 ? "card" : "cards"}.
+              {again > 0
+                ? ` ${again} sent back for another look.`
+                : " All scheduled."}
             </p>
-            <div className="flex flex-wrap justify-center gap-2">
-              {missed.size > 0 && (
-                <button
-                  onClick={() => restart([...missed])}
-                  className="btn-primary"
-                >
-                  Review missed ({missed.size})
-                </button>
-              )}
-              <button
-                onClick={() => restart(allIndices)}
-                className="btn-secondary"
-              >
-                Study again
-              </button>
-            </div>
+            <button onClick={onClose} className="btn-primary">
+              Done
+            </button>
           </div>
         ) : (
           <>
@@ -129,18 +125,15 @@ export function FlashcardStudy({
             <div className="mt-4 flex shrink-0 flex-col items-center gap-2">
               {flipped ? (
                 <div className="flex justify-center gap-2">
-                  <button
-                    onClick={() => advance(false)}
-                    className="btn-secondary"
-                  >
-                    Got it
-                  </button>
-                  <button
-                    onClick={() => advance(true)}
-                    className="btn-utility"
-                  >
-                    Need review
-                  </button>
+                  {GRADE_BUTTONS.map(({ grade: g, label, className }) => (
+                    <button
+                      key={g}
+                      onClick={() => grade(g)}
+                      className={className}
+                    >
+                      {label}
+                    </button>
+                  ))}
                 </div>
               ) : (
                 <>

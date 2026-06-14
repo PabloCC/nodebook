@@ -45,28 +45,32 @@ export function AiActionBar({
   aiConfigured,
   onRun,
   cardCount,
+  dueCount,
   onStudy,
 }: {
   disabled: boolean;
   aiConfigured: boolean;
   onRun: (action: NodeAction, question?: string) => void;
   cardCount: number;
+  dueCount: number;
   onStudy: () => void;
 }) {
+  const studyButton = cardCount > 0 && (
+    <button
+      onClick={onStudy}
+      disabled={disabled}
+      className="btn-action btn-action-flashcards"
+    >
+      <StudyIcon className="h-3.5 w-3.5" weight="fill" aria-hidden />
+      {dueCount > 0 ? `Study (${dueCount} due)` : `Study (${cardCount})`}
+    </button>
+  );
+
   if (!aiConfigured) {
     return (
       <div className="flex flex-wrap items-center gap-2 border-t border-hairline-soft pt-3">
         <ProviderNudge />
-        {cardCount > 0 && (
-          <button
-            onClick={onStudy}
-            disabled={disabled}
-            className="btn-action btn-action-flashcards"
-          >
-            <StudyIcon className="h-3.5 w-3.5" weight="fill" aria-hidden />
-            Study ({cardCount})
-          </button>
-        )}
+        {studyButton}
       </div>
     );
   }
@@ -83,16 +87,7 @@ export function AiActionBar({
           {label}
         </button>
       ))}
-      {cardCount > 0 && (
-        <button
-          onClick={onStudy}
-          disabled={disabled}
-          className="btn-action btn-action-flashcards"
-        >
-          <StudyIcon className="h-3.5 w-3.5" weight="fill" aria-hidden />
-          Study ({cardCount})
-        </button>
-      )}
+      {studyButton}
     </div>
   );
 }

@@ -2,6 +2,7 @@ import {
   sqliteTable,
   text,
   integer,
+  real,
   index,
   primaryKey,
   type AnySQLiteColumn,
@@ -79,6 +80,28 @@ export const nodeSources = sqliteTable(
   ]
 );
 
+// Spaced-repetition state per flashcard. Keyed by node + a hash of the
+// question text (see `cardKey` in src/lib/srs.ts) so it survives deck reorder
+// and partial regeneration. Cascades when the node is deleted.
+export const flashcardReviews = sqliteTable(
+  "flashcard_reviews",
+  {
+    nodeId: text("node_id")
+      .notNull()
+      .references(() => nodes.id, { onDelete: "cascade" }),
+    cardKey: text("card_key").notNull(),
+    ease: real("ease").notNull().default(2.5),
+    interval: integer("interval").notNull().default(0),
+    reps: integer("reps").notNull().default(0),
+    due: integer("due").notNull(),
+    lastReviewed: integer("last_reviewed"),
+  },
+  (table) => [
+    primaryKey({ columns: [table.nodeId, table.cardKey] }),
+    index("flashcard_reviews_due_idx").on(table.due),
+  ]
+);
+
 export const settings = sqliteTable("settings", {
   key: text("key").primaryKey(),
   value: text("value").notNull(),
@@ -88,3 +111,4 @@ export type Workspace = typeof workspaces.$inferSelect;
 export type Source = typeof sources.$inferSelect;
 export type OutlineNode = typeof nodes.$inferSelect;
 export type NodeSource = typeof nodeSources.$inferSelect;
+export type FlashcardReview = typeof flashcardReviews.$inferSelect;

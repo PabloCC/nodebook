@@ -12,6 +12,9 @@ import {
   updateNodeFlashcards,
 } from "@/lib/actions/nodes";
 import { parseFlashcards } from "@/lib/flashcards";
+import { recordReview, refreshWorkspaceReviews } from "@/lib/actions/flashcards";
+import { nodeDeck, dueCount } from "@/lib/study-deck";
+import type { Grade, ReviewState } from "@/lib/srs";
 import { AiActionBar, AskBar, ReviewPanel } from "./AiToolbar";
 import { FlashcardStudy } from "./FlashcardStudy";
 import { SourceTypeIcon, SourceViewerDialog } from "./SourceViewerDialog";
@@ -25,6 +28,7 @@ export function NodeEditor({
   sources = [],
   informingSourceIds = [],
   aiConfigured = false,
+  reviews = {},
 }: {
   node: OutlineNode | null;
   nodes: OutlineNode[];
@@ -32,6 +36,7 @@ export function NodeEditor({
   sources?: Source[];
   informingSourceIds?: string[];
   aiConfigured?: boolean;
+  reviews?: Record<string, ReviewState>;
 }) {
   if (!node) {
     // Fresh workspace (no nodes yet) gets a getting-started path; otherwise
@@ -59,6 +64,7 @@ export function NodeEditor({
       sources={sources}
       informingSourceIds={informingSourceIds}
       aiConfigured={aiConfigured}
+      reviews={reviews}
     />
   );
 }
@@ -126,12 +132,14 @@ function Editor({
   sources,
   informingSourceIds,
   aiConfigured,
+  reviews,
 }: {
   node: OutlineNode;
   workspaceId: string;
   sources: Source[];
   informingSourceIds: string[];
   aiConfigured: boolean;
+  reviews: Record<string, ReviewState>;
 }) {
   const [title, setTitle] = useState(node.title);
   const [content, setContent] = useState(node.content);
@@ -150,6 +158,10 @@ function Editor({
     sourceIds: string[];
   } | null>(null);
   const cards = useMemo(() => parseFlashcards(flashcards), [flashcards]);
+  const dueNow = useMemo(
+    () => dueCount({ id: node.id, flashcards }, reviews),
+    [node.id, flashcards, reviews]
+  );
   const informingSources = sources.filter((s) =>
     informingSourceIds.includes(s.id)
   );
@@ -359,6 +371,7 @@ function Editor({
           aiConfigured={aiConfigured}
           onRun={runAction}
           cardCount={cards.length}
+          dueCount={dueNow}
           onStudy={() => setStudying(true)}
         />
       </div>
@@ -406,7 +419,16 @@ function Editor({
       </div>
 
       {studying && (
-        <FlashcardStudy cards={cards} onClose={() => setStudying(false)} />
+        <FlashcardStudy
+          cards={nodeDeck({ id: node.id, flashcards }, reviews)}
+          onGrade={(nodeId, key, grade: Grade) =>
+            void recordReview(nodeId, key, grade)
+          }
+          onClose={() => {
+            setStudying(false);
+            void refreshWorkspaceReviews(workspaceId);
+          }}
+        />
       )}
 
       <SourceViewerDialog
