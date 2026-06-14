@@ -11,7 +11,7 @@ export default async function SettingsPage() {
   const ollamaModels = await detectOllamaModels(s.ollamaBaseUrl);
 
   return (
-    <main className="mx-auto w-full max-w-2xl flex-1 px-6 py-16">
+    <main className="mx-auto w-full max-w-2xl flex-1 px-6 py-10 sm:py-16">
       <header>
         <Link
           href="/"

@@ -26,6 +26,11 @@ export const metadata: Metadata = {
     "Build, organize, and study structured knowledge from your sources.",
 };
 
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+};
+
 // Applies the saved (or system) theme before first paint, so there's no flash.
 const themeScript = `(function(){try{var t=localStorage.getItem("theme");var d=t==="dark"||((!t||t==="system")&&matchMedia("(prefers-color-scheme: dark)").matches);document.documentElement.classList.toggle("dark",d);}catch(e){}})();`;
 

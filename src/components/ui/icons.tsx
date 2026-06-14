@@ -25,4 +25,8 @@ export {
   DesktopIcon as SystemThemeIcon,
   ExportIcon,
   TrashIcon,
+  TreeStructureIcon as OutlineNavIcon,
+  NotePencilIcon as EditorNavIcon,
+  FilesIcon as SourcesNavIcon,
+  GearIcon as SettingsIcon,
 } from "@phosphor-icons/react";

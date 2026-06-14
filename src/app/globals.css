@@ -219,7 +219,7 @@ kbd {
 
   /* Segmented control — flat active tab, no shadow */
   .pill-group {
-    @apply inline-flex items-center gap-1 rounded-lg bg-surface-soft p-1;
+    @apply inline-flex flex-wrap items-center gap-1 rounded-lg bg-surface-soft p-1;
   }
   .pill-tab {
     @apply rounded-md px-3.5 py-1.5 text-sm font-medium text-muted transition-colors duration-150

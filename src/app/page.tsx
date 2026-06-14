@@ -8,6 +8,7 @@ import { workspaces } from "@/lib/db/schema";
 import { createWorkspace, deleteWorkspace } from "@/lib/actions/workspaces";
 import { ConfirmButton } from "@/components/ui/ConfirmDialog";
 import { ImportButton } from "@/components/ui/ImportButton";
+import { SettingsLink } from "@/components/ui/SettingsLink";
 
 export default async function Home() {
   const all = await db
@@ -16,20 +17,15 @@ export default async function Home() {
     .orderBy(desc(workspaces.createdAt));
 
   return (
-    <main className="mx-auto w-full max-w-3xl flex-1 px-6 py-16">
-      <header className="flex items-end justify-between">
+    <main className="mx-auto w-full max-w-3xl flex-1 px-6 py-10 sm:py-16">
+      <header className="flex items-start justify-between gap-4">
         <div>
           <h1 className="font-display text-display text-ink">MyNodebook</h1>
           <p className="mt-2 max-w-md text-sm leading-relaxed text-muted">
             Build, organize, and study structured knowledge from your sources.
           </p>
         </div>
-        <Link
-          href="/settings"
-          className="text-sm font-medium text-muted transition-colors hover:text-ink"
-        >
-          Settings
-        </Link>
+        <SettingsLink />
       </header>
 
       <section className="mt-12">
@@ -45,7 +41,7 @@ export default async function Home() {
             name="name"
             required
             placeholder='e.g. "Python for Beginners"'
-            className="input-field min-w-64 flex-1"
+            className="input-field w-full flex-1 sm:w-auto sm:min-w-64"
           />
           <select
             name="type"

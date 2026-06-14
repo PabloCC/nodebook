@@ -300,8 +300,8 @@ function Editor({
         : "Add to node";
 
   return (
-    <div className="mx-auto flex h-full max-w-3xl flex-col px-8 py-8">
-      <div className="flex items-center gap-3">
+    <div className="mx-auto flex h-full max-w-3xl flex-col px-4 py-6 lg:px-8 lg:py-8">
+      <div className="flex flex-wrap items-center gap-2 sm:gap-3">
         <input
           value={title}
           onChange={(e) => {

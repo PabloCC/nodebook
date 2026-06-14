@@ -31,8 +31,8 @@ export function SourceViewerDialog({
   if (!source) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-6">
-      <div className="flex max-h-[80vh] w-full max-w-2xl flex-col rounded-2xl border border-hairline bg-canvas p-6 shadow-[0_8px_30px_rgba(0,0,0,0.12)]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 sm:p-6">
+      <div className="flex max-h-[85dvh] w-full max-w-2xl flex-col rounded-2xl border border-hairline bg-canvas p-5 shadow-[0_8px_30px_rgba(0,0,0,0.12)] sm:p-6">
         <div className="flex items-center gap-2">
           <SourceTypeIcon
             type={source.type}

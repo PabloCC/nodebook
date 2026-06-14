@@ -73,8 +73,8 @@ export function FlashcardStudy({
   }, [done, flipped, flip, grade, onClose]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-6">
-      <div className="flex max-h-[80vh] w-full max-w-2xl flex-col rounded-2xl border border-hairline bg-canvas p-6 shadow-[0_8px_30px_rgba(0,0,0,0.12)]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 sm:p-6">
+      <div className="flex max-h-[85dvh] w-full max-w-2xl flex-col rounded-2xl border border-hairline bg-canvas p-5 shadow-[0_8px_30px_rgba(0,0,0,0.12)] sm:p-6">
         <div className="flex items-center gap-3">
           <h2 className="flex-1 font-display text-lg text-ink">
             {done ? "Review complete" : `Card ${position + 1} of ${queue.length}`}
