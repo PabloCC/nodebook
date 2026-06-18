@@ -29,4 +29,6 @@ export {
   NotePencilIcon as EditorNavIcon,
   FilesIcon as SourcesNavIcon,
   GearIcon as SettingsIcon,
+  FileDocIcon as DocIcon,
+  YoutubeLogoIcon as YoutubeIcon,
 } from "@phosphor-icons/react";

@@ -48,13 +48,13 @@ Make output worth sharing or selling, and close the portability gap.
 
 ---
 
-## Phase 3 — Bigger bets ⬜
+## Phase 3 — Bigger bets 🟡
 
-Directional; revisit after Phases 0–2 land.
+Directional; tackled à la carte.
 
-- **More source types** — YouTube transcript, `.docx` / `.epub`, image OCR, behind the same status lifecycle.
-- **E2E tests** — Playwright coverage of the source → outline → study → export flow (today only unit tests exist).
-- **Local-first sync/backup or desktop app (Tauri)** — explicitly deferred; only if user demand appears. Keep the SQLite single-user default intact.
+- **More source types** 🟡 — `.docx` (via `mammoth`), `.txt`/`.md` file upload, and YouTube transcripts (hand-rolled, no dep) all ship behind the same status lifecycle; the file picker dispatches by extension and the URL field auto-detects YouTube. `.epub` and image OCR deferred (OCR too heavy for the trivial-setup goal).
+- **E2E tests** ⬜ — Playwright coverage of the source → outline → study → export flow (today only unit tests exist).
+- **Local-first sync/backup or desktop app (Tauri)** ⬜ — explicitly deferred; only if user demand appears. Keep the SQLite single-user default intact.
 
 ---
 

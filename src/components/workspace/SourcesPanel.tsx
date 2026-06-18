@@ -3,12 +3,16 @@
 import { useRef, useState, useTransition } from "react";
 import type { Source } from "@/lib/db/schema";
 import {
+  addDocxSource,
   addPdfSource,
+  addTextFileSource,
   addTextSource,
   addUrlSource,
+  addYoutubeSource,
   deleteSource,
   retrySource,
 } from "@/lib/actions/sources";
+import { parseYoutubeId } from "@/lib/extract/youtube";
 import { ConfirmButton } from "@/components/ui/ConfirmDialog";
 import { AddIcon, CloseIcon, RewriteActionIcon } from "@/components/ui/icons";
 import {
@@ -101,7 +105,7 @@ export function SourcesPanel({
                         {source.errorMessage}
                       </p>
                     )}
-                    {source.type === "url" && (
+                    {(source.type === "url" || source.type === "youtube") && (
                       <button
                         onClick={() =>
                           startTransition(() => retrySource(source.id))
@@ -141,7 +145,10 @@ export function SourcesPanel({
             pending={pending}
             onSubmit={(url) => {
               setMode(null);
-              startTransition(() => addUrlSource(workspaceId, url));
+              // One field for both: YouTube links pull a transcript, anything
+              // else is read as a web page.
+              const add = parseYoutubeId(url) ? addYoutubeSource : addUrlSource;
+              startTransition(() => add(workspaceId, url));
             }}
             onCancel={() => setMode(null)}
           />
@@ -154,7 +161,7 @@ export function SourcesPanel({
               className="btn-utility flex-1"
             >
               <AddIcon className="h-3.5 w-3.5" weight="bold" />
-              PDF
+              File
             </button>
             <button
               onClick={() => setMode("url")}
@@ -175,7 +182,7 @@ export function SourcesPanel({
         <input
           ref={fileInput}
           type="file"
-          accept="application/pdf"
+          accept=".pdf,.docx,.txt,.md,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain,text/markdown"
           className="hidden"
           onChange={(e) => {
             const file = e.target.files?.[0];
@@ -183,7 +190,15 @@ export function SourcesPanel({
             if (!file) return;
             const formData = new FormData();
             formData.set("file", file);
-            startTransition(() => addPdfSource(workspaceId, formData));
+            // Dispatch by extension: docx → mammoth, txt/md → text, else PDF.
+            const ext = file.name.split(".").pop()?.toLowerCase();
+            const add =
+              ext === "docx"
+                ? addDocxSource
+                : ext === "txt" || ext === "md"
+                  ? addTextFileSource
+                  : addPdfSource;
+            startTransition(() => add(workspaceId, formData));
           }}
         />
         {pending && (
@@ -250,7 +265,7 @@ function UrlForm({
         autoFocus
         value={url}
         onChange={(e) => setUrl(e.target.value)}
-        placeholder="https://…"
+        placeholder="Web page or YouTube URL"
         type="url"
         className="input-field px-3 py-1.5 text-xs"
       />

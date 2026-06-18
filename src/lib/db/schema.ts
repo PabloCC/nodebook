@@ -24,7 +24,9 @@ export const sources = sqliteTable(
     workspaceId: text("workspace_id")
       .notNull()
       .references(() => workspaces.id, { onDelete: "cascade" }),
-    type: text("type", { enum: ["pdf", "url", "text"] }).notNull(),
+    type: text("type", {
+      enum: ["pdf", "url", "text", "docx", "youtube"],
+    }).notNull(),
     title: text("title").notNull(),
     originalRef: text("original_ref"),
     content: text("content").notNull().default(""),

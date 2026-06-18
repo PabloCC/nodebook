@@ -2,12 +2,20 @@
 
 import type { Icon } from "@phosphor-icons/react";
 import type { Source } from "@/lib/db/schema";
-import { PdfIcon, UrlIcon, TextIcon } from "@/components/ui/icons";
+import {
+  PdfIcon,
+  UrlIcon,
+  TextIcon,
+  DocIcon,
+  YoutubeIcon,
+} from "@/components/ui/icons";
 
 const TYPE_ICONS: Record<Source["type"], Icon> = {
   pdf: PdfIcon,
   url: UrlIcon,
   text: TextIcon,
+  docx: DocIcon,
+  youtube: YoutubeIcon,
 };
 
 export function SourceTypeIcon({
